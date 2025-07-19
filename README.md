@@ -1,4 +1,4 @@
-# functional_listener
+# listen_it
 
 Extension functions on `ValueListenable` that allows you to work with them almost as if it was a synchronous stream. Each extension function returns a new `ValueNotifier` that updates its value when the value of `this` changes. You can chain these functions to build complex processing pipelines from a simple `ValueListenable`.
 

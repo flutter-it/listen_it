@@ -1,11 +1,18 @@
-// ignore_for_file: unnecessary_this
-library functional_listener;
+/// providing rx like extensions on `Listenable` and `ValueListenable`
+/// to work with them almost as if it was a synchronous stream.
+/// Each extension function returns a new `Listenable` that updates its value when the value of `this` changes
+/// You can chain these functions to build complex processing pipelines from a simple `Listenable`
+/// In the examples we use [listen] to react on value changes. Instead of applying [listen] you
+/// could also pass the end of the function chain to a `ValueListenableBuilder`
+///
+/// previously published as functional_listener
+library listen_it;
 
 import 'package:flutter/foundation.dart';
-import 'package:functional_listener/src/functional_change_notifiers.dart';
-import 'package:functional_listener/src/functional_value_notifiers.dart';
+import 'package:listen_it/src/functional_change_notifiers.dart';
+import 'package:listen_it/src/functional_value_notifiers.dart';
 
-export 'package:functional_listener/src/custom_value_notifier.dart';
+export 'package:listen_it/src/custom_value_notifier.dart';
 
 extension FunctionaListener2 on Listenable {
   ///

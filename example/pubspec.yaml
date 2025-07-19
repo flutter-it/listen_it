@@ -1,4 +1,4 @@
-name: functiona_listerner_example
+name: listen_it_example
 description: demo project 
 version: 1.0.0+1
 publish_to: none
@@ -7,8 +7,8 @@ environment:
     sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
-  functional_listener:
-    # path: ..
+  listen_it:
+     path: ..
   flutter:
     sdk: flutter
   watch_it: 

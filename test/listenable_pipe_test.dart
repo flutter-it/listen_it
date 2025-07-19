@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:functional_listener/functional_listener.dart';
+import 'package:listen_it/listen_it.dart';
 
 void main() {
   test('Map Test', () {

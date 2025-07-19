@@ -1,7 +1,7 @@
-name: functional_listener
-description: An rx like extension methods on ValueListenable type, that lets you work with ValueNotifiers almost like with Streams
-version: 4.1.0
-homepage: https://github.com/escamoteur/functional_listener
+name: listen_it
+description: An rx like extension methods on ValueListenable type, that lets you work with ValueNotifiers almost like with Streams. Previously published as functional_listener. 
+version: 5.0.0
+homepage: https://github.com/flutter-it/listen_it
 
 environment:
   sdk: ">=3.5.0 <4.0.0"

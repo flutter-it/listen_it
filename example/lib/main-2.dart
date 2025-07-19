@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:functional_listener/functional_listener.dart';
+import 'package:listen_it/listen_it.dart';
 import 'package:watch_it/watch_it.dart';
 
 void main() {

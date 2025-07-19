@@ -1,4 +1,7 @@
-## [4.1.0] - 02.10.2024
+## [5.0.0] - 19.07.2035
+* Although this version doesn't add any new functionality but is just the rebranding of the original functional_listener package I decided to keep the version numbers so it is is easy for anyone switching to the new package and to preserve the history.  
+
+## [4.1.0] - 02.10.2024  >> all entries from here on relate to the original package
 * adding debounce as extenstion method on `Listenable`
 ## [4.0.0] - 29.9.2024
 * Following the findings of https://github.com/escamoteur/functional_listener/issues/13 we no longer destroy the listener chain when the last listener is removed. Because this might change the behavior of your app this is seen as a breaking change and therefore the change to 4.0.0. Please observe if this leads to increasing memory usage

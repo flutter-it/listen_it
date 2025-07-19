@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-/// These classes are used to implement the functional_listener implementation
+/// These classes are used to implement the listen_it implementation
 ///
 abstract class FunctionalValueNotifier<TIn, TOut> extends ValueNotifier<TOut> {
   final ValueListenable<TIn> previousInChain;
