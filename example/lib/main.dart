@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:functiona_listerner_example/model.dart';
+import 'package:listen_it_example/model.dart';
 
 void main() {
   runApp(MyApp());

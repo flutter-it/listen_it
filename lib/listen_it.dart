@@ -1,9 +1,14 @@
-/// providing rx like extensions on `Listenable` and `ValueListenable`
+/// Reactive primitives for Flutter - observable collections and powerful operators
+///
+/// Provides rx-like extensions on `Listenable` and `ValueListenable`
 /// to work with them almost as if it was a synchronous stream.
 /// Each extension function returns a new `Listenable` that updates its value when the value of `this` changes
 /// You can chain these functions to build complex processing pipelines from a simple `Listenable`
 /// In the examples we use [listen] to react on value changes. Instead of applying [listen] you
 /// could also pass the end of the function chain to a `ValueListenableBuilder`
+///
+/// Also includes reactive collections (ListNotifier, MapNotifier, SetNotifier) that automatically
+/// notify listeners when their contents change.
 ///
 /// previously published as functional_listener
 library listen_it;
@@ -12,7 +17,13 @@ import 'package:flutter/foundation.dart';
 import 'package:listen_it/src/functional_change_notifiers.dart';
 import 'package:listen_it/src/functional_value_notifiers.dart';
 
+// Export operators
 export 'package:listen_it/src/custom_value_notifier.dart';
+
+// Export collections
+export 'package:listen_it/src/collections/list_notifier.dart';
+export 'package:listen_it/src/collections/map_notifier.dart';
+export 'package:listen_it/src/collections/set_notifier.dart';
 
 extension FunctionaListener2 on Listenable {
   ///

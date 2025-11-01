@@ -1,3 +1,34 @@
+## [5.1.0] - 2025-11-01
+
+**NEW FEATURE: Merged with listenable_collections**
+
+This release merges the `listenable_collections` package into `listen_it`, creating a unified package for reactive primitives in Flutter.
+
+### Breaking Changes
+- None! This is a backward-compatible feature addition
+- All existing `listen_it` functionality remains unchanged
+
+### New Features
+- **Reactive Collections**: Added `ListNotifier`, `MapNotifier`, and `SetNotifier` from listenable_collections
+  - Lists, Maps, and Sets that automatically notify listeners when their contents change
+  - Support for different notification modes (normal, always, manual)
+  - Transaction support for batching multiple operations
+  - Full compatibility with `ValueListenable` and `ValueListenableBuilder`
+
+### Migration from listenable_collections
+If you were using `listenable_collections`, migration is simple:
+1. Update `pubspec.yaml`: Replace `listenable_collections` with `listen_it: ^5.1.0`
+2. Update imports: Change `import 'package:listenable_collections/listenable_collections.dart';` to `import 'package:listen_it/listen_it.dart';`
+3. All APIs remain identical - no code changes needed!
+
+### Exports
+- Main export (`listen_it.dart`): Includes both operators and collections
+- Selective export (`collections.dart`): Collections only
+- All existing exports remain unchanged
+
+### Dependencies
+- Added `collection: ^1.17.2` dependency (required for collections)
+
 ## [5.0.0] - 19.07.2035
 * Although this version doesn't add any new functionality but is just the rebranding of the original functional_listener package I decided to keep the version numbers so it is is easy for anyone switching to the new package and to preserve the history.  
 
