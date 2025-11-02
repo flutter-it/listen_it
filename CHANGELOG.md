@@ -1,3 +1,36 @@
+## [5.2.0] - 2025-01-11
+
+### New Feature
+
+- **Added `fallbackValue` parameter to `where()` operator**
+  - Solves the long-standing issue where the initial value always passes through the filter
+  - When provided, `fallbackValue` is used if the initial value doesn't match the filter condition
+  - Backward compatible - existing code continues to work without changes
+  - Example: `source.where((x) => x.isEven, fallbackValue: 0)`
+
+### Tests
+
+- Added 3 new tests for `fallbackValue` behavior:
+  - Fallback ignored when initial value matches filter
+  - Fallback used when initial value doesn't match filter
+  - Backward compatibility: no fallback provided (old behavior)
+- All 119 tests pass ✓
+
+## [5.1.1] - 2025-01-11
+
+### Documentation & Testing Updates
+
+- **Major documentation update**: Comprehensive chain lifecycle findings document added
+- **Memory leak investigation**: Verified watch_it v1.7.0+ automatic protection against inline chain creation memory leaks
+- **Test improvements**:
+  - Added 19 comprehensive tests (17 lifecycle + 2 memory) proving chain behavior
+  - Tests verify that `allowObservableChange: false` (watch_it default) prevents memory leaks from inline chain creation
+  - Tests confirm inline chains are SAFE when using watch_it's default settings
+- **Key finding**: Creating chains inline in watch_it selectors (e.g., `watchValue((m) => m.source.map(...))`) is now documented as SAFE due to automatic selector caching
+- **Important**: ValueListenableBuilder with inline chains still requires manual chain storage outside build method
+
+See `CHAIN_LIFECYCLE_FINDINGS.md` for complete details.
+
 ## [5.1.0] - 2025-11-01
 
 **NEW FEATURE: Merged with listenable_collections**

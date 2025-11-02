@@ -148,13 +148,18 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// [selector] function returns true. Because the selector function is called on
   /// every new value you can change the filter during runtime.
   ///
+  /// [fallbackValue] is an optional parameter that provides a value to use when
+  /// the initial value does not match the [selector] condition. If not provided,
+  /// the initial value will be used regardless of whether it matches the filter
+  /// (backward compatible behavior).
+  ///
   /// ATTENTION: Due to the nature of ValueListeners that they always have to have
-  /// a value the filter can't work on the initial value. Therefore it's not
-  /// advised to use [where] inside the Widget tree if you use `setState` because that
-  /// will recreate the underlying `WhereValueNotifier` again passing through the lates
-  /// value of the `this` even if it doesn't fulfill the [selector] condition.
-  /// Therefore it's better not to use it directly in the Widget tree but in
-  /// your state objects
+  /// a value, the filter can't prevent the initial value from being set unless
+  /// you provide a [fallbackValue]. Therefore it's not advised to use [where]
+  /// inside the Widget tree if you use `setState` because that will recreate the
+  /// underlying `WhereValueNotifier` again passing through the latest value of
+  /// `this` even if it doesn't fulfill the [selector] condition (unless you
+  /// provide a [fallbackValue]).
   ///
   /// example: lets only print even values
   /// ```
@@ -162,8 +167,32 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// final subscription = sourceListenable.where( (x)=>x.isEven )
   ///    .listen( (s,_) => print(x) );
   ///```
-  ValueListenable<T> where(bool Function(T) selector) {
-    return WhereValueNotifier(this.value, this, selector);
+  ///
+  /// example with fallbackValue:
+  /// ```
+  /// final sourceListenable = ValueNotifier<int>(5); // odd number
+  /// final evens = sourceListenable.where(
+  ///   (x) => x.isEven,
+  ///   fallbackValue: 0,
+  /// );
+  /// print(evens.value); // 0 (fallback used because 5 is odd)
+  ///```
+  ValueListenable<T> where(
+    bool Function(T) selector, {
+    T? fallbackValue,
+  }) {
+    T initial;
+    if (selector(this.value)) {
+      // Initial value passes the filter - use it
+      initial = this.value;
+    } else if (fallbackValue != null) {
+      // Initial value fails filter AND fallback provided - use fallback
+      initial = fallbackValue;
+    } else {
+      // Initial value fails filter AND no fallback - use current value (backward compatible)
+      initial = this.value;
+    }
+    return WhereValueNotifier(initial, this, selector);
   }
 
   ///

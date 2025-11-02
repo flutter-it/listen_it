@@ -146,6 +146,71 @@ void main() {
     expect(destValues.length, 2);
   });
 
+  test('Where Test - fallbackValue when initial matches', () {
+    // When initial value matches selector, fallback should be ignored
+    final listenable = ValueNotifier<int>(0); // even number
+
+    final filtered = listenable.where((x) => x.isEven, fallbackValue: 100);
+
+    // Initial value matches, so use it (not fallback)
+    expect(filtered.value, 0);
+
+    final destValues = <int>[];
+    final subscription = filtered.listen((x, _) => destValues.add(x));
+
+    listenable.value = 42; // even - should pass
+    listenable.value = 43; // odd - should not pass
+    listenable.value = 44; // even - should pass
+
+    expect(destValues, [42, 44]);
+
+    subscription.cancel();
+  });
+
+  test('Where Test - fallbackValue when initial does not match', () {
+    // When initial value doesn't match selector, use fallback
+    final listenable = ValueNotifier<int>(5); // odd number
+
+    final filtered = listenable.where((x) => x.isEven, fallbackValue: 0);
+
+    // Initial value doesn't match, so use fallback
+    expect(filtered.value, 0);
+
+    final destValues = <int>[];
+    final subscription = filtered.listen((x, _) => destValues.add(x));
+
+    listenable.value = 42; // even - should pass
+    listenable.value = 43; // odd - should not pass
+    listenable.value = 44; // even - should pass
+
+    expect(destValues, [42, 44]);
+
+    subscription.cancel();
+  });
+
+  test(
+      'Where Test - no fallbackValue when initial does not match (backward compatible)',
+      () {
+    // Without fallback, initial value passes through even if it doesn't match
+    final listenable = ValueNotifier<int>(5); // odd number
+
+    final filtered = listenable.where((x) => x.isEven);
+
+    // No fallback, so use initial value even though it's odd (backward compatible)
+    expect(filtered.value, 5);
+
+    final destValues = <int>[];
+    final subscription = filtered.listen((x, _) => destValues.add(x));
+
+    listenable.value = 42; // even - should pass
+    listenable.value = 43; // odd - should not pass
+    listenable.value = 44; // even - should pass
+
+    expect(destValues, [42, 44]);
+
+    subscription.cancel();
+  });
+
   test('async Test', () async {
     final listenable = ValueNotifier<int>(0);
 
