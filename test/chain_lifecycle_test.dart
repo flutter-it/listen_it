@@ -914,7 +914,8 @@ void main() {
       // Initial build - one chain created
       expect(buildCount, 1);
       expect(capturedValues[0], 0);
-      expect(_totalMapChainsCreated, 1, reason: 'First build creates one chain');
+      expect(_totalMapChainsCreated, 1,
+          reason: 'First build creates one chain');
 
       // Fire events - selector cached, NO new chains created
       source.value = 5;
@@ -968,7 +969,8 @@ void main() {
       // Initial build - one chain created
       expect(buildCount, 1);
       expect(capturedValues[0], 0);
-      expect(_totalMapChainsCreated, 1, reason: 'First build creates one chain');
+      expect(_totalMapChainsCreated, 1,
+          reason: 'First build creates one chain');
 
       // Fire events - selector called every build, NEW chains created
       source.value = 5;
@@ -1082,7 +1084,8 @@ void main() {
 
       // Initial build
       expect(buildCount, 1);
-      expect(_totalMapChainsCreated, 1, reason: 'First build creates one chain');
+      expect(_totalMapChainsCreated, 1,
+          reason: 'First build creates one chain');
 
       // Fire events - registerHandler doesn't cause rebuilds, just calls handler
       source.value = 5;

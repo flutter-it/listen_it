@@ -173,7 +173,7 @@ void main() {
       list.shuffle();
 
       expect(listenerCallCount, 1);
-      expect(result.toSet(), {1, 2, 3});  // Verify same elements
+      expect(result.toSet(), {1, 2, 3}); // Verify same elements
     });
 
     test("Listeners get notified on sort", () {
@@ -355,10 +355,12 @@ void main() {
       list.add(4);
       list.add(5);
       list.remove(1);
-      expect(listenerCallCount, 0, reason: 'No notification during transaction');
+      expect(listenerCallCount, 0,
+          reason: 'No notification during transaction');
 
       list.endTransAction();
-      expect(listenerCallCount, 1, reason: 'Single notification after transaction');
+      expect(listenerCallCount, 1,
+          reason: 'Single notification after transaction');
       list.dispose();
     });
 

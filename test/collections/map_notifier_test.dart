@@ -127,7 +127,9 @@ void main() {
         expect(listenerCallCount, 1);
       });
 
-      test('Listener is notified on addAll even with equal values (bulk operations always notify)', () {
+      test(
+          'Listener is notified on addAll even with equal values (bulk operations always notify)',
+          () {
         mapNotifier.addAll(newValues);
         mapNotifier.addAll(newValues);
 
@@ -135,7 +137,9 @@ void main() {
         expect(listenerCallCount, 2);
       });
 
-      test('Listener is notified on addEntries even with equal values (bulk operations always notify)', () {
+      test(
+          'Listener is notified on addEntries even with equal values (bulk operations always notify)',
+          () {
         mapNotifier.addEntries(newValues.entries);
         mapNotifier.addEntries(newValues.entries);
 
@@ -197,11 +201,13 @@ void main() {
           'already existing value', () {
         /// First call: key doesn't exist, so ifAbsent is called - this SHOULD notify
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 1, reason: 'Should notify when adding new key');
+        expect(listenerCallCount, 1,
+            reason: 'Should notify when adding new key');
 
         /// Second call: key exists with value 10, update returns 10 - no change, should NOT notify
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 1, reason: 'Should not notify when value unchanged');
+        expect(listenerCallCount, 1,
+            reason: 'Should not notify when value unchanged');
       });
 
       test(
@@ -210,11 +216,15 @@ void main() {
         mapNotifier.addAll(newValues); // {'zero': 0, 'one': 1}
         expect(listenerCallCount, 1, reason: 'addAll should notify');
 
-        mapNotifier.updateAll((p0, p1) => 1); // {'zero': 1, 'one': 1} - zero changed!
-        expect(listenerCallCount, 2, reason: 'Should notify because zero changed from 0 to 1');
+        mapNotifier
+            .updateAll((p0, p1) => 1); // {'zero': 1, 'one': 1} - zero changed!
+        expect(listenerCallCount, 2,
+            reason: 'Should notify because zero changed from 0 to 1');
 
-        mapNotifier.updateAll((p0, p1) => 1); // {'zero': 1, 'one': 1} - no change
-        expect(listenerCallCount, 2, reason: 'Should not notify when values unchanged');
+        mapNotifier
+            .updateAll((p0, p1) => 1); // {'zero': 1, 'one': 1} - no change
+        expect(listenerCallCount, 2,
+            reason: 'Should not notify when values unchanged');
       });
     });
 
@@ -309,9 +319,11 @@ void main() {
 
       test('Listener is notified when update is called', () {
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 1, reason: 'First update adds key via ifAbsent');
+        expect(listenerCallCount, 1,
+            reason: 'First update adds key via ifAbsent');
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 2, reason: 'Should notify in always mode even when value unchanged');
+        expect(listenerCallCount, 2,
+            reason: 'Should notify in always mode even when value unchanged');
       });
 
       test(
@@ -335,7 +347,8 @@ void main() {
 
   group('Custom equality tests', () {
     // Compare absolute values: -2 and 2 are considered equal
-    final customEquality = (int? x, int? y) => (x?.abs() ?? 0) == (y?.abs() ?? 0);
+    final customEquality =
+        (int? x, int? y) => (x?.abs() ?? 0) == (y?.abs() ?? 0);
 
     group('When notifyIfEqual is false', () {
       late MapNotifier<String, int> mapNotifier;
@@ -421,8 +434,7 @@ void main() {
   });
 
   group('Bug tests for MapNotifier', () {
-    test('addAll() always notifies even in normal mode (bulk operations)',
-        () {
+    test('addAll() always notifies even in normal mode (bulk operations)', () {
       final mapNotifier = MapNotifier<String, int>(
         data: {'a': 1, 'b': 2},
         notificationMode: CustomNotifierMode.normal,
@@ -483,7 +495,8 @@ void main() {
       mapNotifier.dispose();
     });
 
-    test('BUG: updateAll() should detect if ANY value changed, not just the last',
+    test(
+        'BUG: updateAll() should detect if ANY value changed, not just the last',
         () {
       final mapNotifier = MapNotifier<String, int>(
         data: {'a': 1, 'b': 2, 'c': 3},
@@ -578,10 +591,12 @@ void main() {
       mapNotifier['b'] = 2;
       mapNotifier['c'] = 3;
       mapNotifier['d'] = 4;
-      expect(listenerCallCount, 0, reason: 'No notification during transaction');
+      expect(listenerCallCount, 0,
+          reason: 'No notification during transaction');
 
       mapNotifier.endTransAction();
-      expect(listenerCallCount, 1, reason: 'Single notification after transaction');
+      expect(listenerCallCount, 1,
+          reason: 'Single notification after transaction');
       mapNotifier.dispose();
     });
 

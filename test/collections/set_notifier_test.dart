@@ -129,7 +129,8 @@ void main() {
         expect(listenerCallCount, 1);
       });
 
-      test('addAll always notifies even with existing values (bulk operation)', () {
+      test('addAll always notifies even with existing values (bulk operation)',
+          () {
         setNotifier.addAll({1, 2, 3});
 
         expect(listenerCallCount, 1);
@@ -375,10 +376,12 @@ void main() {
       setNotifier.add(2);
       setNotifier.add(3);
       setNotifier.remove(1);
-      expect(listenerCallCount, 0, reason: 'No notification during transaction');
+      expect(listenerCallCount, 0,
+          reason: 'No notification during transaction');
 
       setNotifier.endTransAction();
-      expect(listenerCallCount, 1, reason: 'Single notification after transaction');
+      expect(listenerCallCount, 1,
+          reason: 'Single notification after transaction');
       setNotifier.dispose();
     });
 
@@ -476,7 +479,8 @@ void main() {
       setNotifier.dispose();
     });
 
-    test('addAll with all existing elements always notifies (bulk operation)', () {
+    test('addAll with all existing elements always notifies (bulk operation)',
+        () {
       final setNotifier = SetNotifier<int>(
         data: {1, 2, 3},
         notificationMode: CustomNotifierMode.normal,
@@ -512,7 +516,8 @@ void main() {
       setNotifier.dispose();
     });
 
-    test('removeAll with no matching elements does not notify in normal mode', () {
+    test('removeAll with no matching elements does not notify in normal mode',
+        () {
       final setNotifier = SetNotifier<int>(
         data: {1, 2, 3},
         notificationMode: CustomNotifierMode.normal,
