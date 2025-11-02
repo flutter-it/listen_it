@@ -16,5 +16,4 @@ dev_dependencies:
     sdk: flutter
   leak_tracker:
   lint:
-  watch_it:
-    path: ../watch_it
+  watch_it: ^1.7.0
