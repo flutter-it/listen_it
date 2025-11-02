@@ -1,36 +1,41 @@
+[:heart: Sponsor](https://github.com/sponsors/escamoteur) <a href="https://www.buymeacoffee.com/escamoteur" target="_blank"><img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
 # listen_it
 
-**Reactive primitives for Flutter - observable collections and powerful operators**
+> 📚 **[Complete documentation available at flutter-it.dev](https://flutter-it.dev/documentation/listen_it/listen_it)**
+> Check out the comprehensive docs with detailed guides, examples, and best practices!
 
-Extension functions on `ValueListenable` that let you work with them almost like synchronous streams, plus reactive collections (ListNotifier, MapNotifier, SetNotifier) that automatically notify listeners when their contents change.
+**Reactive primitives for Flutter - observable collections and powerful operators for ValueListenable.**
+
+Managing reactive state in Flutter can be complex. You need collections that notify listeners when they change, operators to transform and combine observables, and patterns that don't cause memory leaks. `listen_it` provides two powerful primitives: reactive collections (ListNotifier, MapNotifier, SetNotifier) that automatically notify on mutations, and extension operators on ValueListenable (map, select, where, debounce, combineLatest) that let you build reactive data pipelines.
 
 Previously published as `functional_listener`. Now includes reactive collections from `listenable_collections`.
 
-## ✨ Features
+> **flutter_it is a construction set** — listen_it works perfectly standalone or combine it with other packages like [watch_it](https://pub.dev/packages/watch_it) (which provides automatic selector caching for safe inline chain creation!), [get_it](https://pub.dev/packages/get_it) (dependency injection), or [command_it](https://pub.dev/packages/command_it) (which uses listen_it internally). Use what you need, when you need it.
 
-### Reactive Collections
-- 🔔 **Automatic Notifications** - Collections notify listeners on every mutation
-- 📦 **Three Collection Types** - `ListNotifier`, `MapNotifier`, `SetNotifier`
-- 🎯 **Three Notification Modes** - Fine-grained control over when notifications fire
-- ⚡ **Transaction Support** - Batch multiple operations into a single notification
-- 🔒 **Immutability** - Value getters return unmodifiable views
-- 🎨 **Flutter Integration** - Works with `ValueListenableBuilder` or `watch_it`
+## Why listen_it?
 
-### ValueListenable Operators
-- 🔗 **Chainable** - Transform, filter, combine, and react to changes
-- 🎯 **Selective updates** - React only to specific property changes with `select()`
-- ⏱️ **Debouncing** - Control rapid value changes
-- 🔀 **Combining** - Merge multiple ValueListenables together
-- 📡 **Listening** - Install handlers that react to value changes
+- **🔔 Reactive Collections** — ListNotifier, MapNotifier, SetNotifier that automatically notify listeners on mutations. No manual notifyListeners() calls needed.
+- **🔗 Chainable Operators** — Transform, filter, combine ValueListenables with map(), select(), where(), debounce(), combineLatest(), mergeWith().
+- **🎯 Selective Updates** — React only to specific property changes with select(). Avoid unnecessary rebuilds.
+- **⚡ Transaction Support** — Batch multiple operations into a single notification for optimal performance.
+- **🔒 Type Safe** — Full compile-time type checking. No runtime surprises.
+- **📦 Pure Dart Core** — Operators work in pure Dart (collections require Flutter for ChangeNotifier).
 
-## 📦 Installation
+[Learn more about listen_it →](https://flutter-it.dev/documentation/listen_it/listen_it)
+
+> ⚠️ **Important:** Operator chains use a "hot" subscription model. See the [best practices guide](https://flutter-it.dev/documentation/listen_it/best_practices) to avoid memory leaks when creating chains inline. TL;DR: Use watch_it (automatic caching!) or create chains outside build methods.
+
+## Quick Start
+
+### Installation
+
+Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   listen_it: ^5.1.0
 ```
-
-## 🚀 Quick Start
 
 ### Reactive Collections
 
@@ -73,14 +78,15 @@ class TodoListWidget extends StatelessWidget {
 ### ValueListenable Operators
 
 #### listen()
-Lets you work with a `ValueListenable` by installing a handler function that is called on any value change:
+
+Lets you work with a `ValueListenable` (and `Listenable`) as it should be by installing a handler function that is called on any value change and gets the new value passed as an argument. **This gives you the same pattern as with Streams**, making it natural and consistent.
 
 ```dart
 final listenable = ValueNotifier<int>(0);
 final subscription = listenable.listen((x, _) => print(x));
 ```
 
-The returned `subscription` can be used to deactivate the handler. You can also cancel from inside the handler:
+The returned `subscription` can be used to deactivate the handler. As you might need to uninstall the handler from inside the handler you get the subscription object passed to the handler function as second parameter:
 
 ```dart
 listenable.listen((x, subscription) {
@@ -91,239 +97,204 @@ listenable.listen((x, subscription) {
 });
 ```
 
-#### map()
-Converts the value of one `ValueListenable` to anything you want:
+This is particularly useful when you want a handler to run only once or a certain number of times:
 
 ```dart
-ValueNotifier<String> source;
+// Run only once
+listenable.listen((x, subscription) {
+  print('First value: $x');
+  subscription.cancel();
+});
 
-final upperCaseSource = source.map((s) => s.toUpperCase());
-
-// Or change the type:
-ValueNotifier<int> intNotifier;
-final stringNotifier = intNotifier.map<String>((i) => i.toString());
+// Run exactly 3 times
+var count = 0;
+listenable.listen((x, subscription) {
+  print('Value: $x');
+  if (++count >= 3) subscription.cancel();
+});
 ```
 
-#### where()
-Filters the values that a ValueListenable can have:
+For regular `Listenable` (not `ValueListenable`), the handler only receives the subscription parameter since there's no value to access:
 
 ```dart
-ValueNotifier<int> intNotifier;
-bool onlyEven = false;
-
-final filteredNotifier = intNotifier.where((i) => onlyEven ? i.isEven : true);
+final listenable = ChangeNotifier();
+listenable.listen((subscription) => print('Changed!'));
 ```
 
-#### select()
-React only to changes in selected properties:
+#### Chaining Operators
+
+Chain operators to build reactive data pipelines:
 
 ```dart
-ValueNotifier<User> notifier = ValueNotifier(User(age: 18, name: "John"));
-
-final birthdayNotifier = notifier.select<int>((model) => model.age);
-// Will only notify when age changes, not when other properties change
-```
-
-#### Chaining functions
-All extension functions (except `listen`) return a new `ValueNotifier`, so you can chain them:
-
-```dart
-ValueNotifier<int> intNotifier;
-
-intNotifier
-    .where((x) => x.isEven)
-    .map<String>((s) => s.toString())
-    .listen((s, _) => print(s));
-```
-
-#### debounce()
-Only propagate values if there's a pause after a value changes. Great for search inputs:
-
-```dart
-ValueNotifier<String> searchTerm;
+final searchTerm = ValueNotifier<String>('');
 
 searchTerm
-    .debounce(const Duration(milliseconds: 500))
-    .listen((s, _) => callRestApi(s));
+    .debounce(const Duration(milliseconds: 300))
+    .where((term) => term.length >= 3)
+    .listen((term, _) => callSearchApi(term));
 ```
 
-#### combineLatest()
-Combines two source `ValueListenables` into one that updates when any source changes:
+**That's it!** Collections notify automatically, operators let you transform data reactively.
 
+## Key Features
+
+### Reactive Collections
+
+Choose the collection that fits your needs:
+
+- **ListNotifier<T>** — Order matters, duplicates allowed. Perfect for: todo lists, chat messages, search history.
+  [Read more →](https://flutter-it.dev/documentation/listen_it/collections/list_notifier)
+
+- **MapNotifier<K,V>** — Key-value lookups. Perfect for: user preferences, caches, form data.
+  [Read more →](https://flutter-it.dev/documentation/listen_it/collections/map_notifier)
+
+- **SetNotifier<T>** — Unique items only, fast membership tests. Perfect for: selected item IDs, active filters, tags.
+  [Read more →](https://flutter-it.dev/documentation/listen_it/collections/set_notifier)
+
+**Notification Modes:**
+- `always` (default) — Notify on every operation
+- `normal` — Only notify on actual changes
+- `manual` — You control when to notify
+
+[Read more about notification modes →](https://flutter-it.dev/documentation/listen_it/collections/notification_modes)
+
+**Transactions** — Batch operations into single notification:
 ```dart
-ValueNotifier<int> intNotifier;
-ValueNotifier<String> stringNotifier;
-
-intNotifier
-    .combineLatest<String, StringIntWrapper>(
-        stringNotifier,
-        (i, s) => StringIntWrapper(s, i))
-    .listen((combined, _) => print(combined));
-```
-
-#### mergeWith()
-Merges value changes from multiple `ValueListenables`:
-
-```dart
-final listenable1 = ValueNotifier<int>(0);
-final listenable2 = ValueNotifier<int>(0);
-final listenable3 = ValueNotifier<int>(0);
-
-listenable1
-    .mergeWith([listenable2, listenable3])
-    .listen((x, _) => print(x));
-```
-
-## 🎯 Notification Modes (Collections)
-
-Choose when your UI should update:
-
-```dart
-// Normal mode - only notify on actual changes
-final cart = SetNotifier<String>(
-  notificationMode: CustomNotifierMode.normal,
-);
-cart.add('item1');    // ✅ Notifies (new item)
-cart.add('item1');    // ❌ No notification (already exists)
-
-// Always mode - notify on every operation (default)
-final cart = SetNotifier<String>(
-  notificationMode: CustomNotifierMode.always,
-);
-cart.add('item1');    // ✅ Notifies
-cart.add('item1');    // ✅ Notifies (even though already exists)
-
-// Manual mode - you control when to notify
-final cart = SetNotifier<String>(
-  notificationMode: CustomNotifierMode.manual,
-);
-cart.add('item1');
-cart.add('item2');
-cart.notifyListeners(); // ✅ Single notification for both adds
-```
-
-**Why the default is `always`?**
-If users haven't overridden `==` operator, they expect UI updates even when setting the "same" value.
-
-## 📊 Choosing the Right Collection
-
-| Collection | Use When | Example Use Case |
-|------------|----------|------------------|
-| `ListNotifier<T>` | Order matters, duplicates allowed | Todo list, chat messages, search history |
-| `MapNotifier<K,V>` | Need key-value lookups | User preferences, caches, form data |
-| `SetNotifier<T>` | Unique items only, fast membership tests | Selected item IDs, active filters, tags |
-
-## ⚡ Batch Updates with Transactions
-
-Avoid unnecessary rebuilds by batching operations:
-
-```dart
-final products = ListNotifier<Product>();
-
-// Without transaction: 3 UI updates
-products.add(product1);
-products.add(product2);
-products.add(product3);
-
-// With transaction: 1 UI update
 products.startTransAction();
-products.add(product1);
-products.add(product2);
-products.add(product3);
-products.endTransAction();
+products.add(item1);
+products.add(item2);
+products.add(item3);
+products.endTransAction(); // Single notification
 ```
+[Read more →](https://flutter-it.dev/documentation/listen_it/collections/transactions)
 
-## 🔍 Real-World Examples
+### ValueListenable Operators
 
-### Shopping Cart Manager
+Transform and combine observables:
 
+- **listen()** — Install handlers that react to value changes. The foundation for reactive programming with ValueListenables.
+  ```dart
+  listenable.listen((value, subscription) => print(value));
+  ```
+
+- **map()** — Transform values to different types
+- **select()** — React only when specific properties change
+- **where()** — Filter which values propagate (now with optional fallbackValue for initial value handling!)
+- **debounce()** — Control rapid value changes (great for search!)
+- **async()** — Defer updates to next frame to avoid setState-during-build
+- **combineLatest()** — Merge multiple ValueListenables (supports 2-6 sources)
+- **mergeWith()** — Combine value changes from multiple sources
+
+[Read operator documentation →](https://flutter-it.dev/documentation/listen_it/operators/overview)
+
+### ⚠️ Important: Chain Lifecycle & Memory Management
+
+Operator chains (like `source.map(...).where(...)`) use a **"hot" subscription model** - they subscribe to their source immediately and stay subscribed even with zero listeners.
+
+**This can cause memory leaks if chains are created inline in build methods!**
+
+✅ **SAFE Patterns:**
 ```dart
-class ShoppingCart {
-  final items = MapNotifier<String, CartItem>();
-
-  void addItem(Product product) {
-    items[product.id] = CartItem(product: product, quantity: 1);
+// Best: Use watch_it (automatic caching)
+class MyWidget extends WatchingWidget {
+  @override
+  Widget build(BuildContext context) {
+    final value = watchValue((Model m) => m.source.map((x) => x * 2));
+    return Text('$value');
   }
+}
 
-  void updateQuantity(String productId, int quantity) {
-    if (quantity <= 0) {
-      items.remove(productId);
-    } else {
-      items[productId] = items[productId]!.copyWith(quantity: quantity);
-    }
+// Alternative: Create chain outside build
+class MyWidget extends StatelessWidget {
+  late final chain = source.map((x) => x * 2);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: chain, // Same object every rebuild
+      builder: (context, value, _) => Text('$value'),
+    );
   }
-
-  double get total => items.values
-      .fold(0.0, (sum, item) => sum + item.price * item.quantity);
 }
 ```
 
-### Reactive Search with Debounce
+❌ **UNSAFE Pattern:**
+```dart
+// DON'T: Chain inline in ValueListenableBuilder
+Widget build(BuildContext context) {
+  return ValueListenableBuilder(
+    valueListenable: source.map((x) => x * 2), // NEW CHAIN EVERY REBUILD!
+    builder: (context, value, _) => Text('$value'),
+  );
+}
+```
+
+**Why watch_it is recommended:** watch_it v1.7.0+ provides automatic selector caching (`allowObservableChange: false` by default), making inline chain creation completely safe!
+
+### Disposal & Garbage Collection
+
+**Good news:** Chains don't require manual disposal in most cases! Dart's garbage collector automatically cleans up circular references when the entire object graph (source + chain) becomes unreachable.
+
+**You only need to:**
+- ✅ Dispose the source ValueNotifier to stop notifications
+- ✅ Manually dispose chains ONLY if the source outlives the chain (e.g., source registered in get_it)
 
 ```dart
-class SearchViewModel {
-  final searchTerm = ValueNotifier<String>('');
-  final results = ListNotifier<SearchResult>();
+class MyService {
+  final counter = ValueNotifier<int>(0);
+  late final doubled = counter.map((x) => x * 2);
 
-  SearchViewModel() {
-    // Debounce search input to avoid excessive API calls
-    searchTerm
-        .debounce(const Duration(milliseconds: 300))
-        .where((term) => term.length >= 3)
-        .listen((term, _) => _performSearch(term));
-  }
-
-  Future<void> _performSearch(String term) async {
-    final apiResults = await searchApi(term);
-    results.startTransAction();
-    results.clear();
-    results.addAll(apiResults);
-    results.endTransAction();
+  void dispose() {
+    counter.dispose(); // Stops notifications
+    // Chain is automatically GC'd when service becomes unreachable
   }
 }
 ```
 
-## CustomValueNotifier
+[Read complete disposal guide →](https://flutter-it.dev/documentation/listen_it/best_practices#disposal)
 
-Sometimes you want a ValueNotifier where you can control when its listeners are notified:
+[Read complete best practices guide →](https://flutter-it.dev/documentation/listen_it/best_practices)
 
-```dart
-enum CustomNotifierMode { normal, manual, always }
+## Ecosystem Integration
 
-// Always mode - notify on every assignment
-final notifier = CustomValueNotifier<int>(
-  0,
-  mode: CustomNotifierMode.always,
-);
+**listen_it works independently** — Use it standalone for reactive collections and operators in any Dart or Flutter project.
 
-// Manual mode - only notify when you call notifyListeners()
-final manualNotifier = CustomValueNotifier<int>(
-  0,
-  mode: CustomNotifierMode.manual,
-);
-manualNotifier.value = 42;
-manualNotifier.value = 43;
-manualNotifier.notifyListeners(); // Only now do listeners get notified
-```
+**Want more?** Combine with other packages from the flutter_it ecosystem:
 
-## 📚 Learn More
+- **Optional: [watch_it](https://pub.dev/packages/watch_it)** — Reactive state management with **automatic selector caching**. Makes inline chain creation safe! Highly recommended for listen_it operator chains.
 
-For more detailed examples and API documentation:
-- [API Documentation](https://pub.dev/documentation/listen_it/latest/)
-- [flutter-it.dev](https://flutter-it.dev) - Complete documentation for the entire flutter_it ecosystem
+- **Optional: [get_it](https://pub.dev/packages/get_it)** — Dependency injection. Register your ListNotifiers, ValueNotifiers, and chains in get_it for global access.
 
-## 🔗 Part of the flutter_it Ecosystem
+- **Optional: [command_it](https://pub.dev/packages/command_it)** — Command pattern with automatic state tracking. Uses listen_it operators internally.
 
-`listen_it` is part of the [flutter_it](https://flutter-it.dev) ecosystem:
-- **get_it** - Dependency injection without the framework
-- **watch_it** - Reactive UI updates, automatically (works great with listen_it!)
-- **command_it** - Encapsulate actions with built-in state
-- **listen_it** - Reactive primitives (you are here!)
+**Remember:** flutter_it is a construction set. Each package works independently. Pick what you need, combine as you grow.
 
-## 🤝 Contributing
+[Learn about the ecosystem →](https://flutter-it.dev)
+
+## Learn More
+
+### Documentation
+
+- **[Getting Started](https://flutter-it.dev/documentation/listen_it/listen_it)** — Overview, installation, when to use what
+- **[Operators](https://flutter-it.dev/documentation/listen_it/operators/overview)** — All operators with examples
+- **[Collections](https://flutter-it.dev/documentation/listen_it/collections/introduction)** — Reactive collections guide
+- **[Best Practices](https://flutter-it.dev/documentation/listen_it/best_practices)** — Chain lifecycle, memory management, disposal patterns
+- **[API Documentation](https://pub.dev/documentation/listen_it/latest/)** — Complete API reference
+
+### Community & Support
+
+- **[Discord](https://discord.gg/ZHYHYCM38h)** — Get help, share ideas, connect with other developers
+- **[GitHub Issues](https://github.com/flutter-it/listen_it/issues)** — Report bugs, request features
+- **[GitHub Discussions](https://github.com/flutter-it/listen_it/discussions)** — Ask questions, share patterns
+
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+**Part of the [flutter_it ecosystem](https://flutter-it.dev)** — Build reactive Flutter apps the easy way. No codegen, no boilerplate, just code.
