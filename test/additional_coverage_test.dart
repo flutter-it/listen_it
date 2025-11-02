@@ -87,27 +87,30 @@ void main() {
   });
 
   group('CustomValueNotifier additional coverage', () {
-    test('hasListeners property works correctly', () {
+    test('listeners are properly added and removed', () {
       final notifier = CustomValueNotifier<int>(0);
+      int callCount = 0;
 
-      expect(notifier.hasListeners, false);
-
-      void listener() {}
+      void listener() => callCount++;
       notifier.addListener(listener);
 
-      expect(notifier.hasListeners, true);
+      notifier.value = 1;
+      expect(callCount, 1);
 
       notifier.removeListener(listener);
+      notifier.value = 2;
 
-      expect(notifier.hasListeners, false);
+      // Should not have incremented after removal
+      expect(callCount, 1);
 
       notifier.dispose();
     });
 
     test('removeListener with non-existent listener does nothing', () {
       final notifier = CustomValueNotifier<int>(0);
+      int callCount = 0;
 
-      void listener1() {}
+      void listener1() => callCount++;
       void listener2() {}
 
       notifier.addListener(listener1);
@@ -115,7 +118,9 @@ void main() {
       // Try to remove a listener that was never added
       expect(() => notifier.removeListener(listener2), returnsNormally);
 
-      expect(notifier.hasListeners, true);
+      // listener1 should still be active
+      notifier.value = 1;
+      expect(callCount, 1);
 
       notifier.dispose();
     });
@@ -139,18 +144,23 @@ void main() {
       notifier.dispose();
     });
 
-    test('hasListeners returns false after dispose', () {
+    test('notifications stop after dispose', () {
       final notifier = CustomValueNotifier<int>(0);
+      int callCount = 0;
 
-      void listener() {}
-      notifier.addListener(listener);
+      notifier.addListener(() => callCount++);
 
-      expect(notifier.hasListeners, true);
+      notifier.value = 1;
+      expect(callCount, 1);
 
       notifier.dispose();
 
-      // After dispose, hasListeners should return false
-      expect(notifier.hasListeners, false);
+      // After dispose, trying to add listeners should not work
+      // (this is standard Flutter behavior we're verifying works correctly)
+      expect(
+        () => notifier.addListener(() {}),
+        throwsA(isA<AssertionError>()),
+      );
     });
 
     test('removing all listeners then adding new ones works', () {
@@ -223,10 +233,7 @@ void main() {
     });
 
     test('normal mode only notifies on actual change', () {
-      final notifier = CustomValueNotifier<int>(
-        0,
-        mode: CustomNotifierMode.normal,
-      );
+      final notifier = CustomValueNotifier<int>(0);
       int callCount = 0;
 
       notifier.addListener(() => callCount++);
@@ -403,6 +410,7 @@ void main() {
 
 // Helper class for testing
 class User {
+  // ignore: unreachable_from_main
   final String name;
   final int age;
 
