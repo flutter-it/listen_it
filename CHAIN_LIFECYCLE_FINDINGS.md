@@ -41,7 +41,7 @@ This document contains findings from comprehensive testing of FunctionalValueNot
 
 **Major Update (2025-01-11)**: watch_it now provides **automatic protection** against inline chain creation memory leaks through selector caching.
 
-#### watch_it Protection (v1.7.0+)
+#### watch_it Protection (v2.0+)
 
 **✅ SAFE with watch_it (default behavior):**
 ```dart
@@ -406,7 +406,7 @@ These findings should be prominently documented in:
 
 The listen_it package's "hot" subscription model is working correctly as designed. Chain objects are created once and maintain stable identity throughout their lifecycle.
 
-**Major breakthrough (2025-01-11)**: The inline chain creation memory leak issue is **SOLVED** for watch_it users! With watch_it v1.7.0+, the default `allowObservableChange: false` parameter provides automatic selector caching, making inline chain creation completely safe:
+**Major breakthrough (2025-01-11)**: The inline chain creation memory leak issue is **SOLVED** for watch_it users! With watch_it v2.0+, the default `allowObservableChange: false` parameter provides automatic selector caching, making inline chain creation completely safe:
 
 ✅ **Safe**: `watchValue((m) => m.source.map(...))` - chain created only once, cached for all subsequent builds
 
@@ -425,7 +425,7 @@ The listen_it package's "hot" subscription model is working correctly as designe
 **Date**: 2025-01-11
 
 **Package Versions**:
-- listen_it: 5.1.0
-- watch_it: 1.7.0+ (with `allowObservableChange` caching support)
+- listen_it: 5.2.0
+- watch_it: 2.0+ (with `allowObservableChange` caching support)
 
-**Major Update**: watch_it v1.7.0+ provides automatic protection against inline chain memory leaks through selector caching with `allowObservableChange: false` as default.
+**Major Update**: watch_it v2.0+ provides automatic protection against inline chain memory leaks through selector caching with `allowObservableChange: false` as default.

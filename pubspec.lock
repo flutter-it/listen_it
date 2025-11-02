@@ -59,14 +59,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  functional_listener:
-    dependency: transitive
-    description:
-      name: functional_listener
-      sha256: c096db771b4ce7ba0f886cc4a761044b11e8276a7bc24cfc812dc4b2bc6f5b16
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   get_it:
     dependency: transitive
     description:
@@ -212,10 +204,10 @@ packages:
     dependency: "direct dev"
     description:
       name: watch_it
-      sha256: "0cc7b8eb1d4a6551ae2525fd310422f8f6c4b2a91313eaa38fc2e9297253eca5"
+      sha256: e15a27cd754008f82c5f17ac7b7a09bf5acddfdb5852148da37b8dbccece747c
       url: "https://pub.dev"
     source: hosted
-    version: "1.7.0"
+    version: "2.0.0"
 sdks:
   dart: ">=3.8.0-0 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"

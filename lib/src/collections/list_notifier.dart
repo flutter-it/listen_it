@@ -119,10 +119,8 @@ class ListNotifier<T> extends DelegatingList<T>
         if (_hasChanged) {
           notifyListeners();
         }
-        break;
       case CustomNotifierMode.always:
         notifyListeners();
-        break;
       case CustomNotifierMode.manual:
         break;
     }
@@ -130,6 +128,7 @@ class ListNotifier<T> extends DelegatingList<T>
   }
 
   /// If needed you can notifiy all listeners manually
+  @override
   void notifyListeners() => super.notifyListeners();
 
   /// Returns an immutable view of the current list state.
@@ -197,8 +196,10 @@ class ListNotifier<T> extends DelegatingList<T>
       if (fillValue == null) {
         _hasChanged = sublist(start, end).any((element) => element != null);
       } else {
-        _hasChanged = sublist(start, end).any((element) =>
-            customEquality?.call(element, fillValue) ?? element != fillValue);
+        _hasChanged = sublist(start, end).any(
+          (element) =>
+              customEquality?.call(element, fillValue) ?? element != fillValue,
+        );
       }
     }
     super.fillRange(start, end, fillValue);
@@ -266,7 +267,8 @@ class ListNotifier<T> extends DelegatingList<T>
   void replaceRange(int start, int end, Iterable<T> iterable) {
     if (_notificationMode == CustomNotifierMode.normal) {
       /// we only need to check if the value is equal if we are in normal mode
-      _hasChanged = !IterableEquality().equals(sublist(start, end), iterable);
+      _hasChanged =
+          !const IterableEquality().equals(sublist(start, end), iterable);
     } else {
       _hasChanged = true;
     }

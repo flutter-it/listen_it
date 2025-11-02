@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:listen_it/listen_it.dart';
 
 abstract class FunctionalChangeNotifier extends ChangeNotifier {
   final Listenable previousInChain;

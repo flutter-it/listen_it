@@ -155,18 +155,20 @@ class CombiningValueNotifier<TIn1, TIn2, TOut> extends ValueNotifier<TOut> {
   bool chainInitialized = false;
 
   CombiningValueNotifier(
-    TOut initialValue,
+    super.initialValue,
     this.previousInChain1,
     this.previousInChain2,
     this.combiner,
-  ) : super(initialValue) {
+  ) {
     internalHandler =
         () => value = combiner(previousInChain1.value, previousInChain2.value);
     init(previousInChain1, previousInChain2);
   }
 
-  void init(ValueListenable<TIn1> previousInChain1,
-      ValueListenable<TIn2> previousInChain2) {
+  void init(
+    ValueListenable<TIn1> previousInChain1,
+    ValueListenable<TIn2> previousInChain2,
+  ) {
     internalHandler =
         () => value = combiner(previousInChain1.value, previousInChain2.value);
     previousInChain1.addListener(internalHandler);
@@ -193,7 +195,10 @@ class CombiningValueNotifier<TIn1, TIn2, TOut> extends ValueNotifier<TOut> {
 }
 
 typedef CombiningFunction3<TIn1, TIn2, TIn3, TOut> = TOut Function(
-    TIn1, TIn2, TIn3);
+  TIn1,
+  TIn2,
+  TIn3,
+);
 
 class CombiningValueNotifier3<TIn1, TIn2, TIn3, TOut>
     extends ValueNotifier<TOut> {
@@ -205,12 +210,12 @@ class CombiningValueNotifier3<TIn1, TIn2, TIn3, TOut>
   bool chainInitialized = false;
 
   CombiningValueNotifier3(
-    TOut initialValue,
+    super.initialValue,
     this.previousInChain1,
     this.previousInChain2,
     this.previousInChain3,
     this.combiner,
-  ) : super(initialValue) {
+  ) {
     init(previousInChain1, previousInChain2, previousInChain3);
   }
 
@@ -250,7 +255,11 @@ class CombiningValueNotifier3<TIn1, TIn2, TIn3, TOut>
 }
 
 typedef CombiningFunction4<TIn1, TIn2, TIn3, TIn4, TOut> = TOut Function(
-    TIn1, TIn2, TIn3, TIn4);
+  TIn1,
+  TIn2,
+  TIn3,
+  TIn4,
+);
 
 class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
     extends ValueNotifier<TOut> {
@@ -263,13 +272,13 @@ class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
   bool chainInitialized = false;
 
   CombiningValueNotifier4(
-    TOut initialValue,
+    super.initialValue,
     this.previousInChain1,
     this.previousInChain2,
     this.previousInChain3,
     this.previousInChain4,
     this.combiner,
-  ) : super(initialValue) {
+  ) {
     init(
       previousInChain1,
       previousInChain2,
@@ -302,8 +311,12 @@ class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
     /// if we already have a listener that means the subscription chain is already
     /// set up so we don't have to do it again.
     if (!chainInitialized) {
-      init(previousInChain1, previousInChain2, previousInChain3,
-          previousInChain4);
+      init(
+        previousInChain1,
+        previousInChain2,
+        previousInChain3,
+        previousInChain4,
+      );
     }
     super.addListener(listener);
   }
@@ -319,7 +332,12 @@ class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
 }
 
 typedef CombiningFunction5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut> = TOut Function(
-    TIn1, TIn2, TIn3, TIn4, TIn5);
+  TIn1,
+  TIn2,
+  TIn3,
+  TIn4,
+  TIn5,
+);
 
 class CombiningValueNotifier5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut>
     extends ValueNotifier<TOut> {
@@ -333,16 +351,21 @@ class CombiningValueNotifier5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut>
   bool chainInitialized = false;
 
   CombiningValueNotifier5(
-    TOut initialValue,
+    super.initialValue,
     this.previousInChain1,
     this.previousInChain2,
     this.previousInChain3,
     this.previousInChain4,
     this.previousInChain5,
     this.combiner,
-  ) : super(initialValue) {
-    init(previousInChain1, previousInChain2, previousInChain3, previousInChain4,
-        previousInChain5);
+  ) {
+    init(
+      previousInChain1,
+      previousInChain2,
+      previousInChain3,
+      previousInChain4,
+      previousInChain5,
+    );
   }
 
   void init(
@@ -372,8 +395,13 @@ class CombiningValueNotifier5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut>
     /// if we already have a listener that means the subscription chain is already
     /// set up so we don't have to do it again.
     if (!chainInitialized) {
-      init(previousInChain1, previousInChain2, previousInChain3,
-          previousInChain4, previousInChain5);
+      init(
+        previousInChain1,
+        previousInChain2,
+        previousInChain3,
+        previousInChain4,
+        previousInChain5,
+      );
     }
     super.addListener(listener);
   }
@@ -405,7 +433,7 @@ class CombiningValueNotifier6<TIn1, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>
   bool chainInitialized = false;
 
   CombiningValueNotifier6(
-    TOut initialValue,
+    super.initialValue,
     this.previousInChain1,
     this.previousInChain2,
     this.previousInChain3,
@@ -413,9 +441,15 @@ class CombiningValueNotifier6<TIn1, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>
     this.previousInChain5,
     this.previousInChain6,
     this.combiner,
-  ) : super(initialValue) {
-    init(previousInChain1, previousInChain2, previousInChain3, previousInChain4,
-        previousInChain5, previousInChain6);
+  ) {
+    init(
+      previousInChain1,
+      previousInChain2,
+      previousInChain3,
+      previousInChain4,
+      previousInChain5,
+      previousInChain6,
+    );
   }
 
   void init(
@@ -448,8 +482,14 @@ class CombiningValueNotifier6<TIn1, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>
     /// if we already have a listener that means the subscription chain is already
     /// set up so we don't have to do it again.
     if (!chainInitialized) {
-      init(previousInChain1, previousInChain2, previousInChain3,
-          previousInChain4, previousInChain5, previousInChain6);
+      init(
+        previousInChain1,
+        previousInChain2,
+        previousInChain3,
+        previousInChain4,
+        previousInChain5,
+        previousInChain6,
+      );
     }
     super.addListener(listener);
   }

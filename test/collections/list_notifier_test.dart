@@ -3,7 +3,7 @@ import 'package:listen_it/listen_it.dart';
 
 void main() {
   group("Tests for the ListNotifier's methods", () {
-    late ListNotifier list;
+    late ListNotifier<int> list;
     List result = [];
     int listenerCallCount = 0;
 
@@ -179,7 +179,7 @@ void main() {
     test("Listeners get notified on sort", () {
       buildListener();
 
-      list.sort((value1, value2) => -(value1.compareTo(value2)));
+      list.sort((value1, value2) => value2.compareTo(value1));
 
       expect(listenerCallCount, 1);
       expect(result, [3, 2, 1]);
@@ -195,7 +195,9 @@ void main() {
 
     test("The listener isn't notified if the value is equal", () {
       final ListNotifier list = ListNotifier(
-          data: [1, 2, 3], notificationMode: CustomNotifierMode.normal);
+        data: [1, 2, 3],
+        notificationMode: CustomNotifierMode.normal,
+      );
 
       list.addListener(() {
         result = [...list.value];
@@ -355,12 +357,18 @@ void main() {
       list.add(4);
       list.add(5);
       list.remove(1);
-      expect(listenerCallCount, 0,
-          reason: 'No notification during transaction');
+      expect(
+        listenerCallCount,
+        0,
+        reason: 'No notification during transaction',
+      );
 
       list.endTransAction();
-      expect(listenerCallCount, 1,
-          reason: 'Single notification after transaction');
+      expect(
+        listenerCallCount,
+        1,
+        reason: 'Single notification after transaction',
+      );
       list.dispose();
     });
 

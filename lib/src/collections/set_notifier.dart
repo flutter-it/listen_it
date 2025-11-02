@@ -140,10 +140,8 @@ class SetNotifier<T> extends DelegatingSet<T>
         if (_hasChanged) {
           notifyListeners();
         }
-        break;
       case CustomNotifierMode.always:
         notifyListeners();
-        break;
       case CustomNotifierMode.manual:
         break;
     }
@@ -151,6 +149,7 @@ class SetNotifier<T> extends DelegatingSet<T>
   }
 
   /// If needed you can notify all listeners manually.
+  @override
   void notifyListeners() => super.notifyListeners();
 
   /// Returns an immutable view of the current set state.

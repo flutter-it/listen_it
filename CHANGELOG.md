@@ -21,7 +21,7 @@
 ### Documentation & Testing Updates
 
 - **Major documentation update**: Comprehensive chain lifecycle findings document added
-- **Memory leak investigation**: Verified watch_it v1.7.0+ automatic protection against inline chain creation memory leaks
+- **Memory leak investigation**: Verified watch_it v2.0+ automatic protection against inline chain creation memory leaks
 - **Test improvements**:
   - Added 19 comprehensive tests (17 lifecycle + 2 memory) proving chain behavior
   - Tests verify that `allowObservableChange: false` (watch_it default) prevents memory leaks from inline chain creation

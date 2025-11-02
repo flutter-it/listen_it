@@ -55,10 +55,10 @@ class TrackedMapValueNotifier<TIn, TOut> extends MapValueNotifier<TIn, TOut> {
   int handlerCallCount = 0;
 
   TrackedMapValueNotifier(
-    TOut initialValue,
-    ValueListenable<TIn> previousInChain,
-    TOut Function(TIn) transformation,
-  ) : super(initialValue, previousInChain, transformation) {
+    super.initialValue,
+    super.previousInChain,
+    super.transformation,
+  ) {
     constructorCallCount++;
     _totalMapChainsCreated++; // Track total instances created
   }
@@ -82,10 +82,10 @@ class TrackedWhereValueNotifier<T> extends WhereValueNotifier<T> {
   int handlerCallCount = 0;
 
   TrackedWhereValueNotifier(
-    T initialValue,
-    ValueListenable<T> previousInChain,
-    bool Function(T) selector,
-  ) : super(initialValue, previousInChain, selector) {
+    super.initialValue,
+    super.previousInChain,
+    super.selector,
+  ) {
     constructorCallCount++;
   }
 
@@ -111,10 +111,10 @@ class TrackedSelectValueNotifier<TIn, TOut>
   int handlerCallCount = 0;
 
   TrackedSelectValueNotifier(
-    TOut initialValue,
-    ValueListenable<TIn> previousInChain,
-    TOut Function(TIn) selector,
-  ) : super(initialValue, previousInChain, selector) {
+    super.initialValue,
+    super.previousInChain,
+    super.selector,
+  ) {
     constructorCallCount++;
   }
 
@@ -914,23 +914,32 @@ void main() {
       // Initial build - one chain created
       expect(buildCount, 1);
       expect(capturedValues[0], 0);
-      expect(_totalMapChainsCreated, 1,
-          reason: 'First build creates one chain');
+      expect(
+        _totalMapChainsCreated,
+        1,
+        reason: 'First build creates one chain',
+      );
 
       // Fire events - selector cached, NO new chains created
       source.value = 5;
       await tester.pump();
       expect(buildCount, 2);
       expect(capturedValues[1], 10);
-      expect(_totalMapChainsCreated, 1,
-          reason: 'Caching prevents new chain creation');
+      expect(
+        _totalMapChainsCreated,
+        1,
+        reason: 'Caching prevents new chain creation',
+      );
 
       source.value = 7;
       await tester.pump();
       expect(buildCount, 3);
       expect(capturedValues[2], 14);
-      expect(_totalMapChainsCreated, 1,
-          reason: 'Still only one chain - no memory leak!');
+      expect(
+        _totalMapChainsCreated,
+        1,
+        reason: 'Still only one chain - no memory leak!',
+      );
 
       di.unregister<ChainModel>();
       di.unregister<ValueNotifier<int>>();
@@ -969,23 +978,32 @@ void main() {
       // Initial build - one chain created
       expect(buildCount, 1);
       expect(capturedValues[0], 0);
-      expect(_totalMapChainsCreated, 1,
-          reason: 'First build creates one chain');
+      expect(
+        _totalMapChainsCreated,
+        1,
+        reason: 'First build creates one chain',
+      );
 
       // Fire events - selector called every build, NEW chains created
       source.value = 5;
       await tester.pump();
       expect(buildCount, 2);
       expect(capturedValues[1], 10);
-      expect(_totalMapChainsCreated, 2,
-          reason: 'Without caching, second build creates new chain');
+      expect(
+        _totalMapChainsCreated,
+        2,
+        reason: 'Without caching, second build creates new chain',
+      );
 
       source.value = 7;
       await tester.pump();
       expect(buildCount, 3);
       expect(capturedValues[2], 14);
-      expect(_totalMapChainsCreated, 3,
-          reason: 'Third build creates third chain - memory leak!');
+      expect(
+        _totalMapChainsCreated,
+        3,
+        reason: 'Third build creates third chain - memory leak!',
+      );
 
       di.unregister<ChainModel>();
       di.unregister<ValueNotifier<int>>();
@@ -1030,8 +1048,10 @@ void main() {
       source.value = 5;
       await tester.pump();
       expect(handlerValues, [10]);
-      expect(buildCount,
-          1); // No rebuild, registerHandler doesn't trigger rebuilds!
+      expect(
+        buildCount,
+        1,
+      ); // No rebuild, registerHandler doesn't trigger rebuilds!
 
       source.value = 7;
       await tester.pump();
@@ -1084,30 +1104,42 @@ void main() {
 
       // Initial build
       expect(buildCount, 1);
-      expect(_totalMapChainsCreated, 1,
-          reason: 'First build creates one chain');
+      expect(
+        _totalMapChainsCreated,
+        1,
+        reason: 'First build creates one chain',
+      );
 
       // Fire events - registerHandler doesn't cause rebuilds, just calls handler
       source.value = 5;
       await tester.pump();
       expect(handlerValues, [10]); // Handler called
       expect(buildCount, 1); // Still no rebuild from registerHandler
-      expect(_totalMapChainsCreated, 1,
-          reason: 'No rebuild, so no new chain created');
+      expect(
+        _totalMapChainsCreated,
+        1,
+        reason: 'No rebuild, so no new chain created',
+      );
 
       // Now trigger a rebuild externally using rebuildTrigger
       rebuildTrigger.value = 1;
       await tester.pump();
       expect(buildCount, 2); // Rebuild happened!
-      expect(_totalMapChainsCreated, 2,
-          reason: 'Rebuild without caching creates new chain - leak!');
+      expect(
+        _totalMapChainsCreated,
+        2,
+        reason: 'Rebuild without caching creates new chain - leak!',
+      );
 
       // Trigger another rebuild
       rebuildTrigger.value = 2;
       await tester.pump();
       expect(buildCount, 3); // Another rebuild
-      expect(_totalMapChainsCreated, 3,
-          reason: 'Third rebuild creates third chain - memory leak!');
+      expect(
+        _totalMapChainsCreated,
+        3,
+        reason: 'Third rebuild creates third chain - memory leak!',
+      );
 
       // Fire source event - handler still works
       source.value = 7;

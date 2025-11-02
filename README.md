@@ -229,7 +229,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-**Why watch_it is recommended:** watch_it v1.7.0+ provides automatic selector caching (`allowObservableChange: false` by default), making inline chain creation completely safe!
+**Why watch_it is recommended:** watch_it v2.0+ provides automatic selector caching (`allowObservableChange: false` by default), making inline chain creation completely safe!
 
 ### Disposal & Garbage Collection
 

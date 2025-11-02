@@ -282,8 +282,9 @@ mixin class CustomChangeNotifier implements ChangeNotifier {
   @protected
   @visibleForTesting
   @pragma('vm:notify-debugger-on-exception')
-  void notifyListeners(
-      [void Function(Object error, StackTrace stackTrace)? onError]) {
+  void notifyListeners([
+    void Function(Object error, StackTrace stackTrace)? onError,
+  ]) {
     assert(CustomChangeNotifier.debugAssertNotDisposed(this));
     if (_count == 0) {
       return;
@@ -310,20 +311,23 @@ mixin class CustomChangeNotifier implements ChangeNotifier {
         if (onError != null) {
           onError(exception, stack);
         } else {
-          FlutterError.reportError(FlutterErrorDetails(
-            exception: exception,
-            stack: stack,
-            library: 'foundation library',
-            context: ErrorDescription(
-                'while dispatching notifications for $runtimeType'),
-            informationCollector: () => <DiagnosticsNode>[
-              DiagnosticsProperty<ChangeNotifier>(
-                'The $runtimeType sending notification was',
-                this,
-                style: DiagnosticsTreeStyle.errorProperty,
+          FlutterError.reportError(
+            FlutterErrorDetails(
+              exception: exception,
+              stack: stack,
+              library: 'foundation library',
+              context: ErrorDescription(
+                'while dispatching notifications for $runtimeType',
               ),
-            ],
-          ));
+              informationCollector: () => <DiagnosticsNode>[
+                DiagnosticsProperty<ChangeNotifier>(
+                  'The $runtimeType sending notification was',
+                  this,
+                  style: DiagnosticsTreeStyle.errorProperty,
+                ),
+              ],
+            ),
+          );
         }
       }
     }
@@ -416,8 +420,9 @@ class CustomValueNotifier<T> extends CustomChangeNotifier
 
   @override
   @pragma('vm:notify-debugger-on-exception')
-  void notifyListeners(
-      [void Function(Object error, StackTrace stackTrace)? onError]) {
+  void notifyListeners([
+    void Function(Object error, StackTrace stackTrace)? onError,
+  ]) {
     if (asyncNotification) {
       Future(() => super.notifyListeners(onError ?? this.onError));
     } else {

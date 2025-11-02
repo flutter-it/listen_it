@@ -36,7 +36,7 @@ class Model {
     _combined!.value = StringIntWrapper(s, _combined!.value.i);
   }
 
-  void dispose() async {
+  Future<void> dispose() async {
     final storage = <List<int>>[];
 
     void allocateMemory() {

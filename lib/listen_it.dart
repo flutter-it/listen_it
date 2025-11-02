@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_this, directives_ordering, require_trailing_commas
+
 /// Reactive primitives for Flutter - observable collections and powerful operators
 ///
 /// Provides rx-like extensions on `Listenable` and `ValueListenable`

@@ -48,6 +48,10 @@ class ServiceWithChain {
     chain = source.map((x) => x * 2);
   }
 
+  // This dispose method is intentionally not called in tests - it demonstrates
+  // what users would do in real code when the source stays alive (e.g., in get_it).
+  // The tests prove that dispose is NOT needed when the entire object becomes unreachable.
+  // ignore: unreachable_from_main
   void dispose() {
     if (chain is FunctionalValueNotifier) {
       (chain as FunctionalValueNotifier).dispose();
@@ -59,7 +63,7 @@ class ServiceWithChain {
 void main() {
   group('Memory and Garbage Collection Tests', () {
     test(
-        'service with source and chain - circular reference CAN be GC\'d when unreachable from roots',
+        "service with source and chain - circular reference CAN be GC'd when unreachable from roots",
         () async {
       // This test proves a critical point about GC behavior:
       // Even though chains create circular references, Dart's GC collects them
@@ -89,13 +93,13 @@ void main() {
         sourceWeakRef.target,
         isNull,
         reason:
-            'Circular reference was GC\'d because unreachable from any GC root',
+            "Circular reference was GC'd because unreachable from any GC root",
       );
       expect(
         chainWeakRef.target,
         isNull,
         reason:
-            'Circular reference was GC\'d because unreachable from any GC root',
+            "Circular reference was GC'd because unreachable from any GC root",
       );
 
       // Key takeaway: Circular references only "leak" if something external
@@ -103,7 +107,7 @@ void main() {
     });
 
     test(
-        'service with source and chain WITH active listener - still GC\'d when unreachable!',
+        "service with source and chain WITH active listener - still GC'd when unreachable!",
         () async {
       // Test variation: add a listener to the chain and DON'T remove it.
       // Does an active listener change GC behavior?

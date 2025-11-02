@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -88,12 +90,12 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           FloatingActionButton.extended(
             onPressed: _nextFunctionalListener,
-            label: Text('Next functional listener'),
+            label: const Text('Next functional listener'),
           ),
           const SizedBox(height: 16.0),
           FloatingActionButton.extended(
             onPressed: _nextNormalListener,
-            label: Text('Next normal listener'),
+            label: const Text('Next normal listener'),
           ),
         ],
       ),

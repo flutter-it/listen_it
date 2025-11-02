@@ -133,7 +133,7 @@ class MapNotifier<K, V> extends DelegatingMap<K, V>
   V? operator [](Object? key) => super[key];
 
   @override
-  operator []=(K key, V value) {
+  void operator []=(K key, V value) {
     final areEqual = customEquality == null
         ? super[key] == value
         : customEquality!(super[key], value);
@@ -159,16 +159,15 @@ class MapNotifier<K, V> extends DelegatingMap<K, V>
         if (_hasChanged) {
           notifyListeners();
         }
-        break;
       case CustomNotifierMode.always:
         notifyListeners();
-        break;
       case CustomNotifierMode.manual:
         break;
     }
     _hasChanged = false;
   }
 
+  @override
   void notifyListeners() {
     super.notifyListeners();
   }

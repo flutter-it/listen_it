@@ -23,7 +23,7 @@ void main() {
     test("Listener is notified when new value is added", () {
       buildListener();
 
-      bool wasAdded = setNotifier.add(4);
+      final bool wasAdded = setNotifier.add(4);
 
       expect(listenerCallCount, 1);
       expect(wasAdded, true);
@@ -51,7 +51,7 @@ void main() {
     test("Listener is notified when value is removed", () {
       buildListener();
 
-      bool wasRemoved = setNotifier.remove(2);
+      final bool wasRemoved = setNotifier.remove(2);
 
       expect(listenerCallCount, 1);
       expect(wasRemoved, true);
@@ -116,14 +116,14 @@ void main() {
       });
 
       test('Adding existing value does not notify', () {
-        bool wasAdded = setNotifier.add(1);
+        final bool wasAdded = setNotifier.add(1);
 
         expect(wasAdded, false);
         expect(listenerCallCount, 0);
       });
 
       test('Adding new value notifies', () {
-        bool wasAdded = setNotifier.add(4);
+        final bool wasAdded = setNotifier.add(4);
 
         expect(wasAdded, true);
         expect(listenerCallCount, 1);
@@ -143,14 +143,14 @@ void main() {
       });
 
       test('Removing existing value notifies', () {
-        bool wasRemoved = setNotifier.remove(1);
+        final bool wasRemoved = setNotifier.remove(1);
 
         expect(wasRemoved, true);
         expect(listenerCallCount, 1);
       });
 
       test('Removing non-existent value does not notify', () {
-        bool wasRemoved = setNotifier.remove(99);
+        final bool wasRemoved = setNotifier.remove(99);
 
         expect(wasRemoved, false);
         expect(listenerCallCount, 0);
@@ -231,7 +231,6 @@ void main() {
       setUp(() {
         setNotifier = SetNotifier(
           data: {1, 2, 3},
-          notificationMode: CustomNotifierMode.always,
         );
         listenerCallCount = 0;
         setNotifier.addListener(() {
@@ -244,14 +243,14 @@ void main() {
       });
 
       test('Adding existing value notifies', () {
-        bool wasAdded = setNotifier.add(1);
+        final bool wasAdded = setNotifier.add(1);
 
         expect(wasAdded, false);
         expect(listenerCallCount, 1);
       });
 
       test('Adding new value notifies', () {
-        bool wasAdded = setNotifier.add(4);
+        final bool wasAdded = setNotifier.add(4);
 
         expect(wasAdded, true);
         expect(listenerCallCount, 1);
@@ -264,7 +263,7 @@ void main() {
       });
 
       test('Removing non-existent value notifies', () {
-        bool wasRemoved = setNotifier.remove(99);
+        final bool wasRemoved = setNotifier.remove(99);
 
         expect(wasRemoved, false);
         expect(listenerCallCount, 1);
@@ -376,12 +375,18 @@ void main() {
       setNotifier.add(2);
       setNotifier.add(3);
       setNotifier.remove(1);
-      expect(listenerCallCount, 0,
-          reason: 'No notification during transaction');
+      expect(
+        listenerCallCount,
+        0,
+        reason: 'No notification during transaction',
+      );
 
       setNotifier.endTransAction();
-      expect(listenerCallCount, 1,
-          reason: 'Single notification after transaction');
+      expect(
+        listenerCallCount,
+        1,
+        reason: 'Single notification after transaction',
+      );
       setNotifier.dispose();
     });
 

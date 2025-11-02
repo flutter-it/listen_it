@@ -55,17 +55,17 @@ void main() {
     });
 
     test('Listener is notified on putIfAbsent', () {
-      for (final entry in newValues.entries)
-
+      for (final entry in newValues.entries) {
         /// If the key does not exist in mapNotifier, add the key and value to mapNotifier
         /// If the key already exists in mapNotifier, do nothing
         mapNotifier.putIfAbsent(entry.key, () => entry.value);
+      }
 
       expect(result, newValues);
     });
 
     test('Listener is notified when a key is removed', () {
-      final key = 'one';
+      const key = 'one';
       mapNotifier[key] = 1;
       expect(result[key], 1);
 
@@ -201,13 +201,19 @@ void main() {
           'already existing value', () {
         /// First call: key doesn't exist, so ifAbsent is called - this SHOULD notify
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 1,
-            reason: 'Should notify when adding new key');
+        expect(
+          listenerCallCount,
+          1,
+          reason: 'Should notify when adding new key',
+        );
 
         /// Second call: key exists with value 10, update returns 10 - no change, should NOT notify
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 1,
-            reason: 'Should not notify when value unchanged');
+        expect(
+          listenerCallCount,
+          1,
+          reason: 'Should not notify when value unchanged',
+        );
       });
 
       test(
@@ -218,21 +224,25 @@ void main() {
 
         mapNotifier
             .updateAll((p0, p1) => 1); // {'zero': 1, 'one': 1} - zero changed!
-        expect(listenerCallCount, 2,
-            reason: 'Should notify because zero changed from 0 to 1');
+        expect(
+          listenerCallCount,
+          2,
+          reason: 'Should notify because zero changed from 0 to 1',
+        );
 
         mapNotifier
             .updateAll((p0, p1) => 1); // {'zero': 1, 'one': 1} - no change
-        expect(listenerCallCount, 2,
-            reason: 'Should not notify when values unchanged');
+        expect(
+          listenerCallCount,
+          2,
+          reason: 'Should not notify when values unchanged',
+        );
       });
     });
 
     group('when notifyIfEqual is true', () {
       setUp(() {
-        mapNotifier = MapNotifier(
-            // notifyIfEqual: true,
-            notificationMode: CustomNotifierMode.always);
+        mapNotifier = MapNotifier();
         listenerCallCount = 0;
         mapNotifier.addListener(() {
           listenerCallCount++;
@@ -319,11 +329,17 @@ void main() {
 
       test('Listener is notified when update is called', () {
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 1,
-            reason: 'First update adds key via ifAbsent');
+        expect(
+          listenerCallCount,
+          1,
+          reason: 'First update adds key via ifAbsent',
+        );
         mapNotifier.update('zero', (_) => 10, ifAbsent: () => 10);
-        expect(listenerCallCount, 2,
-            reason: 'Should notify in always mode even when value unchanged');
+        expect(
+          listenerCallCount,
+          2,
+          reason: 'Should notify in always mode even when value unchanged',
+        );
       });
 
       test(
@@ -399,7 +415,6 @@ void main() {
         mapNotifier = MapNotifier(
           data: {'one': 1, 'negTwo': -2},
           customEquality: customEquality,
-          notificationMode: CustomNotifierMode.always,
         );
         listenerCallCount = 0;
         mapNotifier.addListener(() {
@@ -591,12 +606,18 @@ void main() {
       mapNotifier['b'] = 2;
       mapNotifier['c'] = 3;
       mapNotifier['d'] = 4;
-      expect(listenerCallCount, 0,
-          reason: 'No notification during transaction');
+      expect(
+        listenerCallCount,
+        0,
+        reason: 'No notification during transaction',
+      );
 
       mapNotifier.endTransAction();
-      expect(listenerCallCount, 1,
-          reason: 'Single notification after transaction');
+      expect(
+        listenerCallCount,
+        1,
+        reason: 'Single notification after transaction',
+      );
       mapNotifier.dispose();
     });
 
