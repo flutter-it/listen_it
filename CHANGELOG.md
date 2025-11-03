@@ -1,3 +1,7 @@
+## [5.3.3] - 2025-01-12
+
+- Use absolute GitHub URL for logo in README
+
 ## [5.3.2] - 2025-01-12
 
 - Fixed logo display on pub.dev by using relative path
