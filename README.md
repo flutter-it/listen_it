@@ -32,7 +32,7 @@ Previously published as `functional_listener`. Now includes reactive collections
 
 [Learn more about listen_it →](https://flutter-it.dev/documentation/listen_it/listen_it)
 
-> ⚠️ **Important:** Operator chains use a "hot" subscription model. See the [best practices guide](https://flutter-it.dev/documentation/listen_it/best_practices) to avoid memory leaks when creating chains inline. TL;DR: Use watch_it (automatic caching!) or create chains outside build methods.
+> 💡 **Performance Tip:** Operator chains use lazy initialization - they only subscribe to their sources when you add a listener. Once initialized, chains stay subscribed for efficiency. For best practices with watch_it integration, see the [complete documentation](https://flutter-it.dev/documentation/listen_it/best_practices).
 
 ## Quick Start
 
@@ -197,7 +197,7 @@ Transform and combine observables:
 
 ### ⚠️ Important: Chain Lifecycle & Memory Management
 
-Operator chains (like `source.map(...).where(...)`) use a **"hot" subscription model** - they subscribe to their source immediately and stay subscribed even with zero listeners.
+Operator chains (like `source.map(...).where(...)`) use **lazy initialization** - they only subscribe to their source when the first listener is added, then stay subscribed for efficiency.
 
 **This can cause memory leaks if chains are created inline in build methods!**
 

@@ -1,3 +1,29 @@
+## [5.2.1] - 2025-01-12
+
+### Internal Changes
+
+- **Removed eager initialization from operator chains**
+  - Chains now use true lazy initialization - they only subscribe to sources when the first listener is added
+  - Removed redundant `init()` calls from constructors (leftover from v2.0.2 workaround)
+  - This cleanup was possible after v4.0.0 removed automatic unsubscribe propagation
+  - No behavior changes - chains still maintain persistent subscriptions after initialization
+
+### Documentation
+
+- **Updated terminology throughout documentation**
+  - Changed "hot subscription model" to "lazy initialization with persistent subscriptions"
+  - Updated README.md, best_practices.md, and operators/overview.md
+  - Clearer explanation of chain lifecycle behavior
+
+### Tests
+
+- **Improved test coverage from 83.7% to 97.6%** (+13.9 percentage points)
+  - Added comprehensive lazy initialization tests
+  - Added tests for timer cancellation in debounce
+  - Added tests for error handling, disposal, and reentrant listener removal
+  - Fixed misleading test names to accurately describe what they test
+  - All 199 tests pass ✓
+
 ## [5.2.0] - 2025-01-11
 
 ### New Feature

@@ -44,12 +44,10 @@ class SelectValueNotifier<TIn, TOut>
   final TOut Function(TIn) selector;
 
   SelectValueNotifier(
-    TOut initialValue,
-    ValueListenable<TIn> previousInChain,
+    super.initialValue,
+    super.previousInChain,
     this.selector,
-  ) : super(initialValue, previousInChain) {
-    init(previousInChain);
-  }
+  );
 
   @override
   void init(ValueListenable<TIn> previousInChain) {
@@ -67,12 +65,10 @@ class MapValueNotifier<TIn, TOut> extends FunctionalValueNotifier<TIn, TOut> {
   final TOut Function(TIn) transformation;
 
   MapValueNotifier(
-    TOut initialValue,
-    ValueListenable<TIn> previousInChain,
+    super.initialValue,
+    super.previousInChain,
     this.transformation,
-  ) : super(initialValue, previousInChain) {
-    init(previousInChain);
-  }
+  );
 
   @override
   void init(ValueListenable<TIn> previousInChain) {
@@ -87,12 +83,10 @@ class WhereValueNotifier<T> extends FunctionalValueNotifier<T, T> {
   final bool Function(T) selector;
 
   WhereValueNotifier(
-    T initialValue,
-    ValueListenable<T> previousInChain,
+    super.initialValue,
+    super.previousInChain,
     this.selector,
-  ) : super(initialValue, previousInChain) {
-    init(previousInChain);
-  }
+  );
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -110,12 +104,10 @@ class DebouncedValueNotifier<T> extends FunctionalValueNotifier<T, T> {
   final Duration debounceDuration;
 
   DebouncedValueNotifier(
-    T initialValue,
-    ValueListenable<T> previousInChain,
+    super.initialValue,
+    super.previousInChain,
     this.debounceDuration,
-  ) : super(initialValue, previousInChain) {
-    init(previousInChain);
-  }
+  );
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -130,11 +122,9 @@ class DebouncedValueNotifier<T> extends FunctionalValueNotifier<T, T> {
 
 class AsyncValueNotifier<T> extends FunctionalValueNotifier<T, T> {
   AsyncValueNotifier(
-    T initialValue,
-    ValueListenable<T> previousInChain,
-  ) : super(initialValue, previousInChain) {
-    init(previousInChain);
-  }
+    super.initialValue,
+    super.previousInChain,
+  );
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -159,11 +149,7 @@ class CombiningValueNotifier<TIn1, TIn2, TOut> extends ValueNotifier<TOut> {
     this.previousInChain1,
     this.previousInChain2,
     this.combiner,
-  ) {
-    internalHandler =
-        () => value = combiner(previousInChain1.value, previousInChain2.value);
-    init(previousInChain1, previousInChain2);
-  }
+  );
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -215,9 +201,7 @@ class CombiningValueNotifier3<TIn1, TIn2, TIn3, TOut>
     this.previousInChain2,
     this.previousInChain3,
     this.combiner,
-  ) {
-    init(previousInChain1, previousInChain2, previousInChain3);
-  }
+  );
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -278,14 +262,7 @@ class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
     this.previousInChain3,
     this.previousInChain4,
     this.combiner,
-  ) {
-    init(
-      previousInChain1,
-      previousInChain2,
-      previousInChain3,
-      previousInChain4,
-    );
-  }
+  );
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -358,15 +335,7 @@ class CombiningValueNotifier5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut>
     this.previousInChain4,
     this.previousInChain5,
     this.combiner,
-  ) {
-    init(
-      previousInChain1,
-      previousInChain2,
-      previousInChain3,
-      previousInChain4,
-      previousInChain5,
-    );
-  }
+  );
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -441,16 +410,7 @@ class CombiningValueNotifier6<TIn1, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>
     this.previousInChain5,
     this.previousInChain6,
     this.combiner,
-  ) {
-    init(
-      previousInChain1,
-      previousInChain2,
-      previousInChain3,
-      previousInChain4,
-      previousInChain5,
-      previousInChain6,
-    );
-  }
+  );
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -514,9 +474,7 @@ class MergingValueNotifiers<T> extends FunctionalValueNotifier<T, T> {
     ValueListenable<T> previousInChain,
     this.mergeWith,
     T initialValue,
-  ) : super(initialValue, previousInChain) {
-    init(previousInChain);
-  }
+  ) : super(initialValue, previousInChain);
 
   @override
   void init(ValueListenable<T> previousInChain) {

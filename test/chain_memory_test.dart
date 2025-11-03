@@ -72,6 +72,9 @@ void main() {
       final sourceWeakRef = WeakReference(service.source);
       final chainWeakRef = WeakReference(service.chain);
 
+      // Add a listener to trigger lazy initialization
+      service.chain.addListener(() {});
+
       // Verify it works
       service.source.value = 5;
       expect(service.chain.value, 10);
