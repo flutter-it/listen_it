@@ -7,7 +7,7 @@
   </div>
 </div>
 
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 20px;">
   <h1 style="margin: 0;">listen_it</h1>
   <a href="https://codecov.io/gh/flutter-it/listen_it"><img src="https://codecov.io/gh/flutter-it/listen_it/branch/main/graph/badge.svg?style=for-the-badge" alt="codecov" height="40"/></a>
 </div>
