@@ -1,7 +1,7 @@
 <img align="left" src="https://github.com/flutter-it/listen_it/blob/main/listen_it.png?raw=true" alt="listen_it logo" width="150"/>
 
 <div align="right">
-  <a href="https://www.buymeacoffee.com/escamoteur"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="50" width="217"/></a>
+  <a href="https://www.buymeacoffee.com/escamoteur"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"/></a>
   <br/>
   <a href="https://github.com/sponsors/escamoteur"><img src="https://img.shields.io/badge/Sponsor-❤-ff69b4?style=for-the-badge" alt="Sponsor" height="40"/></a>
 </div>
