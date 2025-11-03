@@ -1,3 +1,7 @@
+## [5.3.1] - 2025-01-12
+
+- Fixed button sizing in README for pub.dev display
+
 ## [5.3.0] - 2025-01-12
 
 ### New Feature
