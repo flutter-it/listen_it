@@ -8,7 +8,7 @@ void main() {
   group('Coverage improvements', () {
     test('MapValueNotifier lazy initialization on first addListener', () {
       final source = ValueNotifier<int>(0);
-      final mapped = source.map((x) => x * 2);
+      final mapped = source.map((x) => x * 2, lazy: true);
 
       // Verify lazy initialization - source should not have listeners yet
       expect(source.hasListeners, false);
@@ -31,7 +31,8 @@ void main() {
     test('DebouncedValueNotifier lazy initialization on first addListener',
         () async {
       final source = ValueNotifier<int>(0);
-      final debounced = source.debounce(const Duration(milliseconds: 50));
+      final debounced =
+          source.debounce(const Duration(milliseconds: 50), lazy: true);
 
       // Verify lazy initialization - source should not have listeners yet
       expect(source.hasListeners, false);
@@ -86,8 +87,8 @@ void main() {
         () {
       final source1 = ValueNotifier<int>(1);
       final source2 = ValueNotifier<String>('a');
-      final combined =
-          source1.combineLatest<String, String>(source2, (a, b) => '$a$b');
+      final combined = source1
+          .combineLatest<String, String>(source2, (a, b) => '$a$b', lazy: true);
 
       // Verify lazy initialization - sources should not have listeners yet
       expect(source1.hasListeners, false);
@@ -318,6 +319,7 @@ void main() {
         source2,
         source3,
         (a, b, c) => a + b + c,
+        lazy: true,
       );
 
       // Lazy init - no listeners yet
@@ -354,6 +356,7 @@ void main() {
         source3,
         source4,
         (a, b, c, d) => a + b + c + d,
+        lazy: true,
       );
 
       // Lazy init
@@ -387,6 +390,7 @@ void main() {
         source4,
         source5,
         (a, b, c, d, e) => a + b + c + d + e,
+        lazy: true,
       );
 
       // Lazy init
@@ -423,6 +427,7 @@ void main() {
         source5,
         source6,
         (a, b, c, d, e, f) => a + b + c + d + e + f,
+        lazy: true,
       );
 
       // Lazy init

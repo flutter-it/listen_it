@@ -1,3 +1,44 @@
+## [5.3.0] - 2025-01-12
+
+### New Feature
+
+- **Added `lazy` parameter to all operators** (addresses [issue #1](https://github.com/flutter-it/listen_it/issues/1))
+  - All operators now support an optional `lazy` parameter to control when chains subscribe to sources
+  - **All operators default to eager initialization** (`lazy=false`) to ensure `.value` is always correct
+  - Eager initialization subscribes to sources immediately, making `.value` reliable even before adding listeners
+  - Lazy initialization (`lazy=true`) delays subscription until first listener is added (memory optimization)
+  - **Breaking change**: Chains now initialize eagerly by default (opt-in to lazy with `lazy: true`)
+
+### Bug Fix
+
+- **Fixed `mergeWith` stale value issue**
+  - Previously, `mergeWith` only subscribed to sources when a listener was added
+  - This meant `.value` could be stale if sources changed before adding a listener
+  - Now with eager initialization (default), all sources are immediately subscribed
+  - `.value` updates immediately when any source changes, even without listeners
+  - Example that now works correctly:
+    ```dart
+    final notifier1 = ValueNotifier<int>(0);
+    final notifier2 = ValueNotifier<int>(100);
+    final merged = notifier1.mergeWith([notifier2]);
+
+    notifier2.value = 200; // Change source WITHOUT listener
+    print(merged.value); // Now correctly prints 200 (was 0 in v5.2.1)
+    ```
+
+### Implementation Details
+
+- Added `lazy` parameter to `FunctionalValueNotifier` base class
+- Updated all operator classes: `SelectValueNotifier`, `MapValueNotifier`, `WhereValueNotifier`, `DebouncedValueNotifier`, `AsyncValueNotifier`
+- Updated `CombiningValueNotifier` classes (2-6 sources) with `lazy` parameter
+- Added `chainInitialized` check in all `dispose()` methods to prevent errors when disposing uninitialized chains
+
+### Tests
+
+- Fixed test in `lazy_init_chain_test.dart` to pass `lazy: true` for mergeWith
+- `lazy_value_test.dart` demonstrates the fix with output showing correct eager initialization
+- All 200+ tests pass ✓
+
 ## [5.2.1] - 2025-01-12
 
 ### Internal Changes

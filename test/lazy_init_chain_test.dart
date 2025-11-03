@@ -8,7 +8,7 @@ void main() {
   group('Lazy initialization with chains', () {
     test('Single map operator - no subscription until listener added', () {
       final source = ValueNotifier<int>(10);
-      final mapped = source.map((x) => x * 2);
+      final mapped = source.map((x) => x * 2, lazy: true);
 
       // Should not have listeners yet (lazy)
       expect(source.hasListeners, false);
@@ -28,9 +28,9 @@ void main() {
 
     test('Chain of 3 operators - no subscription until listener added', () {
       final source = ValueNotifier<int>(10);
-      final mapped = source.map((x) => x * 2);
-      final selected = mapped.select((x) => x + 5);
-      final filtered = selected.where((x) => x > 20);
+      final mapped = source.map((x) => x * 2, lazy: true);
+      final selected = mapped.select((x) => x + 5, lazy: true);
+      final filtered = selected.where((x) => x > 20, lazy: true);
 
       // None should have listeners yet (lazy)
       expect(source.hasListeners, false);
@@ -52,7 +52,9 @@ void main() {
 
     test('Removing and re-adding listener works correctly', () {
       final source = ValueNotifier<int>(5);
-      final chain = source.map((x) => x * 10).where((x) => x > 20);
+      final chain = source
+          .map((x) => x * 10, lazy: true)
+          .where((x) => x > 20, lazy: true);
 
       expect(source.hasListeners, false);
 
@@ -88,7 +90,7 @@ void main() {
       final source2 = ValueNotifier<int>(2);
 
       final combined =
-          source1.combineLatest<int, int>(source2, (a, b) => a + b);
+          source1.combineLatest<int, int>(source2, (a, b) => a + b, lazy: true);
 
       // Should not have listeners yet (lazy)
       expect(source1.hasListeners, false);
@@ -126,6 +128,7 @@ void main() {
         source2,
         source3,
         (a, b, c) => a + b + c,
+        lazy: true,
       );
 
       // Lazy - no listeners yet
@@ -156,6 +159,7 @@ void main() {
         source3,
         source4,
         (a, b, c, d) => a + b + c + d,
+        lazy: true,
       );
 
       expect(source1.hasListeners, false);
@@ -184,6 +188,7 @@ void main() {
         source4,
         source5,
         (a, b, c, d, e) => a + b + c + d + e,
+        lazy: true,
       );
 
       expect(source1.hasListeners, false);
@@ -215,6 +220,7 @@ void main() {
         source5,
         source6,
         (a, b, c, d, e, f) => a + b + c + d + e + f,
+        lazy: true,
       );
 
       expect(source1.hasListeners, false);
@@ -237,7 +243,7 @@ void main() {
       final source2 = ValueNotifier<int>(2);
       final source3 = ValueNotifier<int>(3);
 
-      final merged = source1.mergeWith([source2, source3]);
+      final merged = source1.mergeWith([source2, source3], lazy: true);
 
       // Lazy - no listeners
       expect(source1.hasListeners, false);
@@ -257,7 +263,8 @@ void main() {
 
     test('debounce - lazy init', () async {
       final source = ValueNotifier<int>(1);
-      final debounced = source.debounce(const Duration(milliseconds: 50));
+      final debounced =
+          source.debounce(const Duration(milliseconds: 50), lazy: true);
 
       // Lazy - no listeners
       expect(source.hasListeners, false);
@@ -271,7 +278,7 @@ void main() {
 
     test('async - lazy init', () {
       final source = ValueNotifier<int>(1);
-      final async = source.async();
+      final async = source.async(lazy: true);
 
       // Lazy - no listeners
       expect(source.hasListeners, false);
@@ -287,11 +294,12 @@ void main() {
       final source = ValueNotifier<int>(10);
 
       // Create complex chain: map -> combineLatest -> select -> where
-      final mapped = source.map((x) => x * 2);
+      final mapped = source.map((x) => x * 2, lazy: true);
       final other = ValueNotifier<int>(5);
-      final combined = mapped.combineLatest<int, int>(other, (a, b) => a + b);
-      final selected = combined.select((x) => x ~/ 5);
-      final filtered = selected.where((x) => x > 3);
+      final combined =
+          mapped.combineLatest<int, int>(other, (a, b) => a + b, lazy: true);
+      final selected = combined.select((x) => x ~/ 5, lazy: true);
+      final filtered = selected.where((x) => x > 3, lazy: true);
 
       // Nothing should have listeners (all lazy)
       expect(source.hasListeners, false);
@@ -322,7 +330,8 @@ void main() {
 
     test('Removing all listeners and re-adding', () {
       final source = ValueNotifier<int>(5);
-      final chain = source.map((x) => x * 2).map((x) => x + 1);
+      final chain =
+          source.map((x) => x * 2, lazy: true).map((x) => x + 1, lazy: true);
 
       // Add first listener
       final listener1 = () {};

@@ -13,8 +13,14 @@ abstract class FunctionalValueNotifier<TIn, TOut> extends ValueNotifier<TOut> {
 
   FunctionalValueNotifier(
     super.initialValue,
-    this.previousInChain,
-  );
+    this.previousInChain, {
+    bool lazy = false,
+  }) {
+    if (!lazy) {
+      // Eager initialization: subscribe immediately
+      init(previousInChain);
+    }
+  }
 
   void init(ValueListenable<TIn> previousInChain);
 
@@ -34,7 +40,9 @@ abstract class FunctionalValueNotifier<TIn, TOut> extends ValueNotifier<TOut> {
 
   @override
   void dispose() {
-    previousInChain.removeListener(internalHandler);
+    if (chainInitialized) {
+      previousInChain.removeListener(internalHandler);
+    }
     super.dispose();
   }
 }
@@ -46,8 +54,9 @@ class SelectValueNotifier<TIn, TOut>
   SelectValueNotifier(
     super.initialValue,
     super.previousInChain,
-    this.selector,
-  );
+    this.selector, {
+    super.lazy,
+  });
 
   @override
   void init(ValueListenable<TIn> previousInChain) {
@@ -67,8 +76,9 @@ class MapValueNotifier<TIn, TOut> extends FunctionalValueNotifier<TIn, TOut> {
   MapValueNotifier(
     super.initialValue,
     super.previousInChain,
-    this.transformation,
-  );
+    this.transformation, {
+    super.lazy,
+  });
 
   @override
   void init(ValueListenable<TIn> previousInChain) {
@@ -85,8 +95,9 @@ class WhereValueNotifier<T> extends FunctionalValueNotifier<T, T> {
   WhereValueNotifier(
     super.initialValue,
     super.previousInChain,
-    this.selector,
-  );
+    this.selector, {
+    super.lazy,
+  });
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -106,8 +117,9 @@ class DebouncedValueNotifier<T> extends FunctionalValueNotifier<T, T> {
   DebouncedValueNotifier(
     super.initialValue,
     super.previousInChain,
-    this.debounceDuration,
-  );
+    this.debounceDuration, {
+    super.lazy,
+  });
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -123,8 +135,9 @@ class DebouncedValueNotifier<T> extends FunctionalValueNotifier<T, T> {
 class AsyncValueNotifier<T> extends FunctionalValueNotifier<T, T> {
   AsyncValueNotifier(
     super.initialValue,
-    super.previousInChain,
-  );
+    super.previousInChain, {
+    super.lazy,
+  });
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -148,8 +161,14 @@ class CombiningValueNotifier<TIn1, TIn2, TOut> extends ValueNotifier<TOut> {
     super.initialValue,
     this.previousInChain1,
     this.previousInChain2,
-    this.combiner,
-  );
+    this.combiner, {
+    bool lazy = false,
+  }) {
+    if (!lazy) {
+      // Eager initialization: subscribe immediately
+      init(previousInChain1, previousInChain2);
+    }
+  }
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -174,8 +193,10 @@ class CombiningValueNotifier<TIn1, TIn2, TOut> extends ValueNotifier<TOut> {
 
   @override
   void dispose() {
-    previousInChain1.removeListener(internalHandler);
-    previousInChain2.removeListener(internalHandler);
+    if (chainInitialized) {
+      previousInChain1.removeListener(internalHandler);
+      previousInChain2.removeListener(internalHandler);
+    }
     super.dispose();
   }
 }
@@ -200,8 +221,13 @@ class CombiningValueNotifier3<TIn1, TIn2, TIn3, TOut>
     this.previousInChain1,
     this.previousInChain2,
     this.previousInChain3,
-    this.combiner,
-  );
+    this.combiner, {
+    bool lazy = false,
+  }) {
+    if (!lazy) {
+      init(previousInChain1, previousInChain2, previousInChain3);
+    }
+  }
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -231,9 +257,11 @@ class CombiningValueNotifier3<TIn1, TIn2, TIn3, TOut>
 
   @override
   void dispose() {
-    previousInChain1.removeListener(internalHandler);
-    previousInChain2.removeListener(internalHandler);
-    previousInChain3.removeListener(internalHandler);
+    if (chainInitialized) {
+      previousInChain1.removeListener(internalHandler);
+      previousInChain2.removeListener(internalHandler);
+      previousInChain3.removeListener(internalHandler);
+    }
     super.dispose();
   }
 }
@@ -261,8 +289,18 @@ class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
     this.previousInChain2,
     this.previousInChain3,
     this.previousInChain4,
-    this.combiner,
-  );
+    this.combiner, {
+    bool lazy = false,
+  }) {
+    if (!lazy) {
+      init(
+        previousInChain1,
+        previousInChain2,
+        previousInChain3,
+        previousInChain4,
+      );
+    }
+  }
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -300,10 +338,12 @@ class CombiningValueNotifier4<TIn1, TIn2, TIn3, TIn4, TOut>
 
   @override
   void dispose() {
-    previousInChain1.removeListener(internalHandler);
-    previousInChain2.removeListener(internalHandler);
-    previousInChain3.removeListener(internalHandler);
-    previousInChain4.removeListener(internalHandler);
+    if (chainInitialized) {
+      previousInChain1.removeListener(internalHandler);
+      previousInChain2.removeListener(internalHandler);
+      previousInChain3.removeListener(internalHandler);
+      previousInChain4.removeListener(internalHandler);
+    }
     super.dispose();
   }
 }
@@ -334,8 +374,19 @@ class CombiningValueNotifier5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut>
     this.previousInChain3,
     this.previousInChain4,
     this.previousInChain5,
-    this.combiner,
-  );
+    this.combiner, {
+    bool lazy = false,
+  }) {
+    if (!lazy) {
+      init(
+        previousInChain1,
+        previousInChain2,
+        previousInChain3,
+        previousInChain4,
+        previousInChain5,
+      );
+    }
+  }
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -377,11 +428,13 @@ class CombiningValueNotifier5<TIn1, TIn2, TIn3, TIn4, TIn5, TOut>
 
   @override
   void dispose() {
-    previousInChain1.removeListener(internalHandler);
-    previousInChain2.removeListener(internalHandler);
-    previousInChain3.removeListener(internalHandler);
-    previousInChain4.removeListener(internalHandler);
-    previousInChain5.removeListener(internalHandler);
+    if (chainInitialized) {
+      previousInChain1.removeListener(internalHandler);
+      previousInChain2.removeListener(internalHandler);
+      previousInChain3.removeListener(internalHandler);
+      previousInChain4.removeListener(internalHandler);
+      previousInChain5.removeListener(internalHandler);
+    }
     super.dispose();
   }
 }
@@ -409,8 +462,20 @@ class CombiningValueNotifier6<TIn1, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>
     this.previousInChain4,
     this.previousInChain5,
     this.previousInChain6,
-    this.combiner,
-  );
+    this.combiner, {
+    bool lazy = false,
+  }) {
+    if (!lazy) {
+      init(
+        previousInChain1,
+        previousInChain2,
+        previousInChain3,
+        previousInChain4,
+        previousInChain5,
+        previousInChain6,
+      );
+    }
+  }
 
   void init(
     ValueListenable<TIn1> previousInChain1,
@@ -456,12 +521,14 @@ class CombiningValueNotifier6<TIn1, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>
 
   @override
   void dispose() {
-    previousInChain1.removeListener(internalHandler);
-    previousInChain2.removeListener(internalHandler);
-    previousInChain3.removeListener(internalHandler);
-    previousInChain4.removeListener(internalHandler);
-    previousInChain5.removeListener(internalHandler);
-    previousInChain6.removeListener(internalHandler);
+    if (chainInitialized) {
+      previousInChain1.removeListener(internalHandler);
+      previousInChain2.removeListener(internalHandler);
+      previousInChain3.removeListener(internalHandler);
+      previousInChain4.removeListener(internalHandler);
+      previousInChain5.removeListener(internalHandler);
+      previousInChain6.removeListener(internalHandler);
+    }
     super.dispose();
   }
 }
@@ -473,8 +540,9 @@ class MergingValueNotifiers<T> extends FunctionalValueNotifier<T, T> {
   MergingValueNotifiers(
     ValueListenable<T> previousInChain,
     this.mergeWith,
-    T initialValue,
-  ) : super(initialValue, previousInChain);
+    T initialValue, {
+    super.lazy = false, // mergeWith defaults to eager initialization
+  }) : super(initialValue, previousInChain);
 
   @override
   void init(ValueListenable<T> previousInChain) {
@@ -494,7 +562,9 @@ class MergingValueNotifiers<T> extends FunctionalValueNotifier<T, T> {
 
   @override
   void dispose() {
-    disposeFuncs.forEach(_callSelf);
+    if (chainInitialized) {
+      disposeFuncs.forEach(_callSelf);
+    }
     super.dispose();
   }
 }

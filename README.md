@@ -32,7 +32,7 @@ Previously published as `functional_listener`. Now includes reactive collections
 
 [Learn more about listen_it →](https://flutter-it.dev/documentation/listen_it/listen_it)
 
-> 💡 **Performance Tip:** Operator chains use lazy initialization - they only subscribe to their sources when you add a listener. Once initialized, chains stay subscribed for efficiency. For best practices with watch_it integration, see the [complete documentation](https://flutter-it.dev/documentation/listen_it/best_practices).
+> 💡 **Eager Initialization (v5.3.0+):** Operator chains now use **eager initialization by default** - they subscribe to sources immediately, ensuring `.value` is always correct even before adding listeners. This fixes stale value issues but uses slightly more memory. For memory-constrained scenarios, pass `lazy: true` to delay subscription until the first listener is added. Once initialized, chains stay subscribed for efficiency. For best practices, see the [complete documentation](https://flutter-it.dev/documentation/listen_it/best_practices).
 
 ## Quick Start
 
@@ -195,9 +195,72 @@ Transform and combine observables:
 
 [Read operator documentation →](https://flutter-it.dev/documentation/listen_it/operators/overview)
 
+### Eager vs Lazy Initialization (v5.3.0+)
+
+All operators now support a `lazy` parameter to control when chains subscribe to their sources:
+
+```dart
+// Default: Eager initialization (lazy=false)
+final eager = source.map((x) => x * 2);
+print(eager.value); // Always correct, even without listeners ✓
+
+source.value = 5;
+print(eager.value); // Immediately updated to 10 ✓
+
+// Explicit: Lazy initialization (lazy=true)
+final lazy = source.map((x) => x * 2, lazy: true);
+print(lazy.value); // Computed from initial source value
+
+source.value = 5;
+print(lazy.value); // STALE! Not updated until listener is added ⚠️
+
+lazy.addListener(() {}); // Now subscribes and future updates work
+source.value = 7;
+print(lazy.value); // Now correctly updates to 14 ✓
+```
+
+**When to use eager (default):**
+- ✅ When you need `.value` to always be correct
+- ✅ When using ValueListenableBuilder (ensures correct initial render)
+- ✅ In most application code (convenience over memory)
+
+**When to use lazy (`lazy: true`):**
+- ✅ Memory-constrained environments (many chains, few listeners)
+- ✅ When chains might not be used
+- ✅ Performance-critical scenarios where subscription cost matters
+
+#### Mixing Lazy and Eager in Chains
+
+Each operator in a chain is independent. You can mix lazy and eager, but this can lead to confusing behavior:
+
+```dart
+final source = ValueNotifier<int>(5);
+final eager = source.map((x) => x * 2);           // Default: eager
+final lazy = eager.map((x) => x + 1, lazy: true); // Explicit: lazy
+
+source.value = 7;
+print(eager.value); // 14 ✓ (eager subscribed, updates immediately)
+print(lazy.value);  // 11 ⚠️ (STALE! lazy not subscribed yet)
+
+lazy.addListener(() {}); // Subscribe lazy to eager
+print(lazy.value);  // 11 ⚠️ (STILL STALE! Doesn't retroactively update)
+
+source.value = 10;
+print(lazy.value);  // 21 ✓ (NOW updates on next change)
+```
+
+**Key behaviors:**
+
+- **Eager → Lazy**: Eager part updates, lazy part can be stale until listener added
+- **Lazy → Eager**: Eager subscribes to lazy immediately, which triggers lazy to initialize the whole chain
+- **All eager (default)**: Entire chain subscribes immediately, `.value` always correct ✓
+- **All lazy**: Chain doesn't subscribe until end gets a listener
+
+**Recommendation**: Don't mix. Use all-eager (default, simple) or all-lazy (memory optimization). Mixing can cause hard-to-debug stale values.
+
 ### ⚠️ Important: Chain Lifecycle & Memory Management
 
-Operator chains (like `source.map(...).where(...)`) use **lazy initialization** - they only subscribe to their source when the first listener is added, then stay subscribed for efficiency.
+Operator chains (like `source.map(...).where(...)`) use **eager initialization by default (v5.3.0+)** - they subscribe to sources immediately and stay subscribed for efficiency. While this ensures `.value` is always correct, it means chains consume resources even without listeners.
 
 **This can cause memory leaks if chains are created inline in build methods!**
 

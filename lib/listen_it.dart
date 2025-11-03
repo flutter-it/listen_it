@@ -113,11 +113,13 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// final subscription = sourceListenable.map<String>( (x)
   ///    => x.toString()).listen( (s,_) => print(x) );
   ///```
-  ValueListenable<TResult> map<TResult>(TResult Function(T) convert) {
+  ValueListenable<TResult> map<TResult>(TResult Function(T) convert,
+      {bool lazy = false}) {
     return MapValueNotifier<T, TResult>(
       convert(this.value),
       this,
       convert,
+      lazy: lazy,
     );
   }
 
@@ -136,11 +138,13 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// sourceListenable.value = const Size(200,200);
   ///```
   /// count will be just 1
-  ValueListenable<TResult> select<TResult>(TResult Function(T) selector) {
+  ValueListenable<TResult> select<TResult>(TResult Function(T) selector,
+      {bool lazy = false}) {
     return SelectValueNotifier(
       selector(value),
       this,
       selector,
+      lazy: lazy,
     );
   }
 
@@ -182,6 +186,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   ValueListenable<T> where(
     bool Function(T) selector, {
     T? fallbackValue,
+    bool lazy = false,
   }) {
     T initial;
     if (selector(this.value)) {
@@ -194,7 +199,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
       // Initial value fails filter AND no fallback - use current value (backward compatible)
       initial = this.value;
     }
-    return WhereValueNotifier(initial, this, selector);
+    return WhereValueNotifier(initial, this, selector, lazy: lazy);
   }
 
   ///
@@ -230,8 +235,8 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// ```
   ///  will print out 45
   ///
-  ValueListenable<T> debounce(Duration timeOut) {
-    return DebouncedValueNotifier(this.value, this, timeOut);
+  ValueListenable<T> debounce(Duration timeOut, {bool lazy = false}) {
+    return DebouncedValueNotifier(this.value, this, timeOut, lazy: lazy);
   }
 
   /// ValueListenable are inherently synchronous. In most cases this is what you
@@ -242,10 +247,11 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// By using [async] you push the update of the ValueListenable to the next
   /// frame. This way you can update the ValueListenable inside a build method
   /// without getting an exception.
-  ValueListenable<T> async() {
+  ValueListenable<T> async({bool lazy = false}) {
     return AsyncValueNotifier(
       this.value,
       this,
+      lazy: lazy,
     );
   }
 
@@ -297,13 +303,15 @@ extension FunctionaListener<T> on ValueListenable<T> {
   ///
   ValueListenable<TOut> combineLatest<TIn2, TOut>(
     ValueListenable<TIn2> combineWith,
-    CombiningFunction2<T, TIn2, TOut> combiner,
-  ) {
+    CombiningFunction2<T, TIn2, TOut> combiner, {
+    bool lazy = false,
+  }) {
     return CombiningValueNotifier<T, TIn2, TOut>(
       combiner(this.value, combineWith.value),
       this,
       combineWith,
       combiner,
+      lazy: lazy,
     );
   }
 
@@ -319,13 +327,15 @@ extension FunctionaListener<T> on ValueListenable<T> {
   ValueListenable<TOut> combineLatest3<TIn2, TIn3, TOut>(
       ValueListenable<TIn2> combineWith2,
       ValueListenable<TIn3> combineWith3,
-      CombiningFunction3<T, TIn2, TIn3, TOut> combiner) {
+      CombiningFunction3<T, TIn2, TIn3, TOut> combiner,
+      {bool lazy = false}) {
     return CombiningValueNotifier3<T, TIn2, TIn3, TOut>(
       combiner(this.value, combineWith2.value, combineWith3.value),
       this,
       combineWith2,
       combineWith3,
       combiner,
+      lazy: lazy,
     );
   }
 
@@ -342,7 +352,8 @@ extension FunctionaListener<T> on ValueListenable<T> {
       ValueListenable<TIn2> combineWith2,
       ValueListenable<TIn3> combineWith3,
       ValueListenable<TIn4> combineWith4,
-      CombiningFunction4<T, TIn2, TIn3, TIn4, TOut> combiner) {
+      CombiningFunction4<T, TIn2, TIn3, TIn4, TOut> combiner,
+      {bool lazy = false}) {
     return CombiningValueNotifier4<T, TIn2, TIn3, TIn4, TOut>(
       combiner(this.value, combineWith2.value, combineWith3.value,
           combineWith4.value),
@@ -351,6 +362,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
       combineWith3,
       combineWith4,
       combiner,
+      lazy: lazy,
     );
   }
 
@@ -372,7 +384,8 @@ extension FunctionaListener<T> on ValueListenable<T> {
       ValueListenable<TIn3> combineWith3,
       ValueListenable<TIn4> combineWith4,
       ValueListenable<TIn5> combineWith5,
-      CombiningFunction5<T, TIn2, TIn3, TIn4, TIn5, TOut> combiner) {
+      CombiningFunction5<T, TIn2, TIn3, TIn4, TIn5, TOut> combiner,
+      {bool lazy = false}) {
     return CombiningValueNotifier5<T, TIn2, TIn3, TIn4, TIn5, TOut>(
       combiner(this.value, combineWith2.value, combineWith3.value,
           combineWith4.value, combineWith5.value),
@@ -382,6 +395,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
       combineWith4,
       combineWith5,
       combiner,
+      lazy: lazy,
     );
   }
 
@@ -405,7 +419,8 @@ extension FunctionaListener<T> on ValueListenable<T> {
       ValueListenable<TIn4> combineWith4,
       ValueListenable<TIn5> combineWith5,
       ValueListenable<TIn6> combineWith6,
-      CombiningFunction6<T, TIn2, TIn3, TIn4, TIn5, TIn6, TOut> combiner) {
+      CombiningFunction6<T, TIn2, TIn3, TIn4, TIn5, TIn6, TOut> combiner,
+      {bool lazy = false}) {
     return CombiningValueNotifier6<T, TIn2, TIn3, TIn4, TIn5, TIn6, TOut>(
       combiner(this.value, combineWith2.value, combineWith3.value,
           combineWith4.value, combineWith5.value, combineWith6.value),
@@ -416,12 +431,21 @@ extension FunctionaListener<T> on ValueListenable<T> {
       combineWith5,
       combineWith6,
       combiner,
+      lazy: lazy,
     );
   }
 
   /// Merges value changes of [this] together with value changes of a List of
   /// `ValueListenables` so that when ever any of them changes the result of
   /// [mergeWith] will change too.
+  ///
+  /// By default, [mergeWith] uses eager initialization ([lazy] = false), meaning
+  /// it subscribes to all sources immediately and the `.value` getter will always
+  /// reflect the most recent value from any source, even before adding a listener.
+  ///
+  /// If [lazy] is true, subscription to sources is delayed until the first listener
+  /// is added. This can improve performance when creating many merges that might
+  /// not be used, but `.value` will be stale until a listener is added.
   ///
   /// ```
   ///     final listenable1 = ValueNotifier<int>(0);
@@ -440,10 +464,29 @@ extension FunctionaListener<T> on ValueListenable<T> {
   ///     ```
   ///   Will print 42,43,44,45,46
   ///
+  /// Example with eager initialization (default):
+  /// ```dart
+  /// final notifier1 = ValueNotifier<int>(0);
+  /// final notifier2 = ValueNotifier<int>(100);
+  /// final merged = notifier1.mergeWith([notifier2]);
+  /// print(merged.value); // Prints 100 (most recent value across all sources)
+  /// ```
+  ///
+  /// Example with lazy initialization:
+  /// ```dart
+  /// final notifier1 = ValueNotifier<int>(0);
+  /// final notifier2 = ValueNotifier<int>(100);
+  /// final merged = notifier1.mergeWith([notifier2], lazy: true);
+  /// print(merged.value); // Prints 0 (only knows about notifier1 at creation)
+  /// merged.addListener(() {});
+  /// print(merged.value); // Now prints 100 (subscribed to all sources)
+  /// ```
+  ///
   ValueListenable<T> mergeWith(
-    List<ValueListenable<T>> mergeWith,
-  ) =>
-      MergingValueNotifiers<T>(this, mergeWith, this.value);
+    List<ValueListenable<T>> mergeWith, {
+    bool lazy = false,
+  }) =>
+      MergingValueNotifiers<T>(this, mergeWith, this.value, lazy: lazy);
 }
 
 /// Object that is returned by [listen] that allows you to stop the calling of the
