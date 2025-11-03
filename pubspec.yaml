@@ -1,7 +1,15 @@
 name: listen_it
 description: Reactive primitives for Flutter - observable collections and powerful operators. Work with ValueNotifiers like Streams. Includes ListNotifier, MapNotifier, SetNotifier. Previously published as functional_listener.
 version: 5.2.0
+maintainer: Thomas Burkhart (@escamoteur)
 homepage: https://github.com/flutter-it/listen_it
+repository: https://github.com/flutter-it/listen_it
+funding:
+  - https://github.com/sponsors/escamoteur/
+
+screenshots:
+  - description: 'The listen_it logo'
+    path: listen_it.png
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
