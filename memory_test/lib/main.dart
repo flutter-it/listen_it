@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:listen_it_example/model.dart';
+import 'package:memory_test_example/model.dart';
 
 void main() {
   runApp(MyApp());
