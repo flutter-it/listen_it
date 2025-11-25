@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\Entwicklung\flutter
-FLUTTER_APPLICATION_PATH=C:\Entwicklung\packages\functional_listener\example
+FLUTTER_ROOT=/home/escamoteur/dev/flutter
+FLUTTER_APPLICATION_PATH=/home/escamoteur/dev/flutter_it/listen_it/example
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=1.0.0

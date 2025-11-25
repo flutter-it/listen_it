@@ -1,3 +1,8 @@
+## [5.3.4] - 2025-11-25
+
+- Restored working example project (was corrupted with memory test code)
+- Memory test example preserved in `memory_test/` folder
+
 ## [5.3.3] - 2025-01-12
 
 - Use absolute GitHub URL for logo in README
