@@ -1,3 +1,8 @@
+## [5.3.5] - 2026-02-19
+
+- Added AI skill files in `skills/` directory for AI coding assistants
+- Added AI-Assisted Development section to README
+
 ## [5.3.4] - 2025-11-25
 
 - Restored working example project (was corrupted with memory test code)

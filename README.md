@@ -342,6 +342,18 @@ class MyService {
 
 [Learn about the ecosystem →](https://flutter-it.dev)
 
+## AI-Assisted Development
+
+This package includes **AI skill files** in the `skills/` directory that help AI coding assistants
+(Claude Code, Cursor, GitHub Copilot, and others) generate correct code using listen_it.
+
+The skill files teach AI tools critical rules, common patterns, and anti-patterns specific to listen_it.
+Included skills: `listen-it-expert`, `flutter-architecture-expert`.
+
+They follow the [Agent Skills](https://github.com/agentskills) open standard.
+
+[Learn more about AI skills →](https://flutter-it.dev/misc/ai_skills)
+
 ## Learn More
 
 ### Documentation
