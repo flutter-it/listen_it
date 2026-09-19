@@ -261,7 +261,7 @@ void main() {
       source3.dispose();
     });
 
-    test('debounce - lazy init', () async {
+    test('debounce - lazy init', () {
       final source = ValueNotifier<int>(1);
       final debounced =
           source.debounce(const Duration(milliseconds: 50), lazy: true);

@@ -1,3 +1,7 @@
+## [6.0.0] - 2026-09-19
+
+- Shortened package description and fixed analyzer infos reported by pub.dev.
+
 ## [5.3.5] - 2026-02-19
 
 - Added AI skill files in `skills/` directory for AI coding assistants

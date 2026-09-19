@@ -1,5 +1,5 @@
 /// Reactive collections only
-library listen_it.collections;
+library;
 
 export 'src/collections/list_notifier.dart';
 export 'src/collections/map_notifier.dart';

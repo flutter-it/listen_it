@@ -13,7 +13,7 @@
 /// notify listeners when their contents change.
 ///
 /// previously published as functional_listener
-library listen_it;
+library;
 
 import 'package:flutter/foundation.dart';
 import 'package:listen_it/src/functional_change_notifiers.dart';
@@ -38,7 +38,7 @@ extension FunctionaListener2 on Listenable {
   /// is possible to uninstall the [handler] from the [handler] itself.
   ///
   /// example:
-  /// ```
+  /// ```dart
   ///
   /// final listenable = ChangeNotifier;
   /// final subscription = listenable.listen((_) => print('Notified'));
@@ -80,7 +80,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// is possible to uninstall the [handler] from the [handler] itself.
   ///
   /// example:
-  /// ```
+  /// ```dart
   ///
   /// final listenable = ValueNotifier<int>(0);
   /// final subscription = listenable.listen((x, _) => print(x));
@@ -108,7 +108,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// [convert] is called to do the type conversion
   ///
   /// example (lets pretend that print wouldn't automatically call toString):
-  /// ```
+  /// ```dart
   /// final sourceListenable = ValueNotifier<int>(0);
   /// final subscription = sourceListenable.map<String>( (x)
   ///    => x.toString()).listen( (s,_) => print(x) );
@@ -129,7 +129,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// With this you can react on a specific value change of a property of the ValueListenable.
   ///
   /// example
-  /// ```
+  /// ```dart
   /// ValueNotifier<Size> sourceListenable = ValueNotifier<Size>(const Size(10, 10));
   /// int count = 0;
   /// var subscription = sourceListenable.select<double>((x)=> x.height).listen((_, __) => count++);
@@ -168,14 +168,14 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// provide a [fallbackValue]).
   ///
   /// example: lets only print even values
-  /// ```
+  /// ```dart
   /// final sourceListenable = ValueNotifier<int>(0);
   /// final subscription = sourceListenable.where( (x)=>x.isEven )
   ///    .listen( (s,_) => print(x) );
   ///```
   ///
   /// example with fallbackValue:
-  /// ```
+  /// ```dart
   /// final sourceListenable = ValueNotifier<int>(5); // odd number
   /// final evens = sourceListenable.where(
   ///   (x) => x.isEven,
@@ -215,7 +215,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// inside your model objects
   ///
   /// example:
-  /// ```
+  /// ```dart
   /// final listenable = ValueNotifier<int>(0);
   ///
   /// listenable
@@ -266,7 +266,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// the input listenables.
   ///
   /// example:
-  /// ```
+  /// ```dart
   ///    class StringIntWrapper {
   ///      final String s;
   ///      final int i;
@@ -402,6 +402,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   ///
   /// Similar to what [combineLatest] does. Only change is you can listen to 6 ValueNotifiers together
   /// usage e.g:
+  /// ```dart
   /// final subscription = listenable1
   ///         .combineLatest6<String, String, String, String, String, String>(
   ///             listenable2,
@@ -413,6 +414,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   ///         .listen((x, _) {
   ///       print(x);
   ///     });
+  /// ```
   ValueListenable<TOut> combineLatest6<TIn2, TIn3, TIn4, TIn5, TIn6, TOut>(
       ValueListenable<TIn2> combineWith2,
       ValueListenable<TIn3> combineWith3,
@@ -447,7 +449,7 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// is added. This can improve performance when creating many merges that might
   /// not be used, but `.value` will be stale until a listener is added.
   ///
-  /// ```
+  /// ```dart
   ///     final listenable1 = ValueNotifier<int>(0);
   ///     final listenable2 = ValueNotifier<int>(0);
   ///     final listenable3 = ValueNotifier<int>(0);
