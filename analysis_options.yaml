@@ -3,6 +3,13 @@ include: package:lint/analysis_options_package.yaml
 analyzer:
   exclude:
     - memory_test/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
     
 linter:
   rules:

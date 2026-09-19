@@ -59,6 +59,7 @@ Thanks to @Feichtmeier for the detach mechanism
   `CombiningValueNotifier`..`CombiningValueNotifier6`), `MergingValueNotifiers`
   and `FunctionalChangeNotifier`.
 * `pubspec.lock` is no longer committed, following the Dart guidelines for library packages.
+* Shortened package description and fixed analyzer infos reported by pub.dev.
 
 ## [5.3.5] - 2026-02-19
 
