@@ -65,24 +65,24 @@ void main() {
     notifier2.dispose();
   });
 
-  test('map() with lazy initialization - value is stale without listener', () {
+  test(
+      'map() with lazy initialization - value is derived on read without listener',
+      () {
     final source = ValueNotifier<int>(5);
     final mapped = source.map((x) => x * 2, lazy: true); // Explicit lazy
 
     expect(mapped.value, 10); // Initial computed value
 
     source.value = 7; // Change source WITHOUT listener
-    expect(mapped.value, 10); // STALE! Lazy means no subscription, so no update
+    // Not subscribed, but `.value` is derived from the source on read
+    expect(mapped.value, 14);
 
-    // Add listener - subscribes but doesn't retroactively update the value
+    // Add listener - subscribes and resyncs the stored value
     mapped.addListener(() {});
-    expect(
-      mapped.value,
-      10,
-    ); // STILL STALE! Lazy init doesn't retroactively update
+    expect(mapped.value, 14);
 
-    source.value = 10; // Change WITH listener - NOW it updates
-    expect(mapped.value, 20); // Finally updates on next source change
+    source.value = 10; // Change WITH listener - updates via subscription
+    expect(mapped.value, 20);
 
     source.dispose();
   });

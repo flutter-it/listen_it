@@ -32,7 +32,7 @@ Previously published as `functional_listener`. Now includes reactive collections
 
 [Learn more about listen_it →](https://flutter-it.dev/documentation/listen_it/listen_it)
 
-> 💡 **Eager Initialization (v5.3.0+):** Operator chains now use **eager initialization by default** - they subscribe to sources immediately, ensuring `.value` is always correct even before adding listeners. This fixes stale value issues but uses slightly more memory. For memory-constrained scenarios, pass `lazy: true` to delay subscription until the first listener is added. Once initialized, chains stay subscribed for efficiency. For best practices, see the [complete documentation](https://flutter-it.dev/documentation/listen_it/best_practices).
+> 💡 **Chain lifecycle (v6.0.0+):** Operator chains subscribe to their source eagerly on creation (or on the first listener with `lazy: true`), **detach from the source when their last listener is removed** and re-attach on the next one. While a chain has no listeners its `.value` is derived from the current source value on read, so it is never stale, and a chain that nobody references any more can be garbage collected. For best practices, see the [complete documentation](https://flutter-it.dev/documentation/listen_it/best_practices).
 
 ## Quick Start
 
@@ -195,103 +195,63 @@ Transform and combine observables:
 
 [Read operator documentation →](https://flutter-it.dev/documentation/listen_it/operators/overview)
 
-### Eager vs Lazy Initialization (v5.3.0+)
+### Chain Lifecycle: Attach, Detach and Derived Values (v6.0.0+)
 
-All operators now support a `lazy` parameter to control when chains subscribe to their sources:
+An operator chain (`source.map(...)`, `a.combineLatest(b, ...)`, ...) is a `ValueListenable` that follows this lifecycle:
+
+1. **Attach** - the chain subscribes to its source(s) when it is created (default) or, with `lazy: true`, when it gets its first listener.
+2. **Detach** - when the *last* listener is removed, the chain unsubscribes from its source(s). In a longer chain this cascades down to the original source.
+3. **Re-attach** - the next `addListener` subscribes again and refreshes the stored value *before* the new listener is registered, so nothing is missed and no spurious notification is sent.
+
+While a chain is detached its `.value` is **derived from the current source value on read**, so it is never stale:
 
 ```dart
-// Default: Eager initialization (lazy=false)
-final eager = source.map((x) => x * 2);
-print(eager.value); // Always correct, even without listeners ✓
+final source = ValueNotifier<int>(1);
+final doubled = source.map((x) => x * 2);
+
+void listener() {}
+doubled.addListener(listener);
+doubled.removeListener(listener); // last listener gone -> detached
 
 source.value = 5;
-print(eager.value); // Immediately updated to 10 ✓
+print(doubled.value); // 10 ✓ derived on read, no subscription needed
 
-// Explicit: Lazy initialization (lazy=true)
-final lazy = source.map((x) => x * 2, lazy: true);
-print(lazy.value); // Computed from initial source value
-
-source.value = 5;
-print(lazy.value); // STALE! Not updated until listener is added ⚠️
-
-lazy.addListener(() {}); // Now subscribes and future updates work
-source.value = 7;
-print(lazy.value); // Now correctly updates to 14 ✓
+doubled.addListener(listener); // re-attached, value already fresh
 ```
 
-**When to use eager (default):**
-- ✅ When you need `.value` to always be correct
-- ✅ When using ValueListenableBuilder (ensures correct initial render)
-- ✅ In most application code (convenience over memory)
+| Operator | `.value` while detached |
+|---|---|
+| `map`, `select` | transform / selector applied to the current source value |
+| `where` | current source value if it passes the filter, otherwise the last passing value |
+| `debounce`, `async` | current source value |
+| `combineLatest` | combiner applied to the current source values |
+| `mergeWith` | last received value (it can't know which source changed last) |
 
-**When to use lazy (`lazy: true`):**
-- ✅ Memory-constrained environments (many chains, few listeners)
-- ✅ When chains might not be used
-- ✅ Performance-critical scenarios where subscription cost matters
+Because the transformation may run on read while detached, **keep transformation functions pure**.
 
-#### Mixing Lazy and Eager in Chains
+**`lazy: true`** only changes step 1: the first subscription happens on the first listener instead of on creation. Before that, `.value` is derived on read exactly as for a detached chain, so `lazy: true` is a pure memory optimisation with no stale-value trade-off.
 
-Each operator in a chain is independent. You can mix lazy and eager, but this can lead to confusing behavior:
+
+### Chain Lifecycle & Memory Management
+
+Because a chain releases its source as soon as nobody listens to it any more, a chain that is created for a widget and discarded with it no longer leaves a dangling listener on the source. With watch_it, creating chains inline in a selector is therefore safe:
 
 ```dart
-final source = ValueNotifier<int>(5);
-final eager = source.map((x) => x * 2);           // Default: eager
-final lazy = eager.map((x) => x + 1, lazy: true); // Explicit: lazy
-
-source.value = 7;
-print(eager.value); // 14 ✓ (eager subscribed, updates immediately)
-print(lazy.value);  // 11 ⚠️ (STALE! lazy not subscribed yet)
-
-lazy.addListener(() {}); // Subscribe lazy to eager
-print(lazy.value);  // 11 ⚠️ (STILL STALE! Doesn't retroactively update)
-
-source.value = 10;
-print(lazy.value);  // 21 ✓ (NOW updates on next change)
-```
-
-**Key behaviors:**
-
-- **Eager → Lazy**: Eager part updates, lazy part can be stale until listener added
-- **Lazy → Eager**: Eager subscribes to lazy immediately, which triggers lazy to initialize the whole chain
-- **All eager (default)**: Entire chain subscribes immediately, `.value` always correct ✓
-- **All lazy**: Chain doesn't subscribe until end gets a listener
-
-**Recommendation**: Don't mix. Use all-eager (default, simple) or all-lazy (memory optimization). Mixing can cause hard-to-debug stale values.
-
-### ⚠️ Important: Chain Lifecycle & Memory Management
-
-Operator chains (like `source.map(...).where(...)`) use **eager initialization by default (v5.3.0+)** - they subscribe to sources immediately and stay subscribed for efficiency. While this ensures `.value` is always correct, it means chains consume resources even without listeners.
-
-**This can cause memory leaks if chains are created inline in build methods!**
-
-✅ **SAFE Patterns:**
-```dart
-// Best: Use watch_it (automatic caching)
 class MyWidget extends WatchingWidget {
   @override
   Widget build(BuildContext context) {
+    // selector is cached (called once per widget instance); when the widget
+    // is disposed the chain loses its listener and detaches from m.source
     final value = watchValue((Model m) => m.source.map((x) => x * 2));
     return Text('$value');
   }
 }
-
-// Alternative: Create chain outside build
-class MyWidget extends StatelessWidget {
-  late final chain = source.map((x) => x * 2);
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: chain, // Same object every rebuild
-      builder: (context, value, _) => Text('$value'),
-    );
-  }
-}
 ```
 
-❌ **UNSAFE Pattern:**
+Two things still matter:
+
+❌ **Don't create chains on every rebuild** - each one is a new object doing work while it is attached:
 ```dart
-// DON'T: Chain inline in ValueListenableBuilder
 Widget build(BuildContext context) {
   return ValueListenableBuilder(
     valueListenable: source.map((x) => x * 2), // NEW CHAIN EVERY REBUILD!
@@ -299,16 +259,15 @@ Widget build(BuildContext context) {
   );
 }
 ```
+Create the chain once instead (a field, `late final`, or `createOnce` with watch_it).
 
-**Why watch_it is recommended:** watch_it v2.0+ provides automatic selector caching (`allowObservableChange: false` by default), making inline chain creation completely safe!
+✅ **Chains you keep alive yourself** (e.g. as a field of a long-lived manager) stay attached while they have listeners and re-attach when needed - just like any other `ValueListenable`.
 
 ### Disposal & Garbage Collection
 
-**Good news:** Chains don't require manual disposal in most cases! Dart's garbage collector automatically cleans up circular references when the entire object graph (source + chain) becomes unreachable.
+Chains don't require manual disposal in most cases. A chain without listeners holds no subscription on its source, so it is garbage collected as soon as nothing references it any more; and when the whole graph (source + chain) becomes unreachable, Dart's GC collects it regardless.
 
-**You only need to:**
-- ✅ Dispose the source ValueNotifier to stop notifications
-- ✅ Manually dispose chains ONLY if the source outlives the chain (e.g., source registered in get_it)
+Call `dispose()` on a chain only when you want to end it explicitly while it still has listeners, or to be sure a pending `debounce` timer / `async` update is cancelled.
 
 ```dart
 class MyService {
@@ -316,8 +275,7 @@ class MyService {
   late final doubled = counter.map((x) => x * 2);
 
   void dispose() {
-    counter.dispose(); // Stops notifications
-    // Chain is automatically GC'd when service becomes unreachable
+    counter.dispose(); // stops notifications; the chain is GC'd with the service
   }
 }
 ```
@@ -344,13 +302,21 @@ class MyService {
 
 ## AI-Assisted Development
 
-This package includes **AI skill files** in the `skills/` directory that help AI coding assistants
-(Claude Code, Cursor, GitHub Copilot, and others) generate correct code using listen_it.
+This package ships an [Agent Skill](https://agentskills.io) for AI coding assistants
+(Claude Code, Cursor, GitHub Copilot, Codex, Gemini CLI and others) in `skills/listen-it-expert/`.
+It teaches them the critical rules, common patterns and anti-patterns of listen_it.
+Install it into your project with the official Dart skills tool:
 
-The skill files teach AI tools critical rules, common patterns, and anti-patterns specific to listen_it.
-Included skills: `listen-it-expert`, `flutter-architecture-expert`.
+```bash
+dart run skills@ get
+```
 
-They follow the [Agent Skills](https://github.com/agentskills) open standard.
+For the ecosystem-wide skills (architecture guidance, feed/data-source patterns, overview)
+and the skills of the other flutter_it packages run:
+
+```bash
+dart run skills@ add flutter-it/flutter_it
+```
 
 [Learn more about AI skills →](https://flutter-it.dev/misc/ai_skills)
 

@@ -16,20 +16,23 @@ import 'package:watch_it/watch_it.dart';
 ///    - They are NOT recreated on each event
 ///    - Same objects process all events throughout their lifetime
 ///
-/// 2. **Chains are "hot" (eager), not "cold" (lazy)**
-///    - Most operators call init() in their constructor
-///    - Chains subscribe to their sources immediately upon creation
-///    - This happens BEFORE any listener is added
-///    - Chains stay subscribed even when they have zero listeners
+/// 2. **Chains attach eagerly and detach automatically**
+///    - Operators subscribe to their source in the constructor (unless
+///      `lazy: true`), BEFORE any listener is added
+///    - When the last listener is removed, the chain detaches from its source
+///      so it never leaks a listener on the source while unobserved
+///    - While detached `.value` is derived from the current source value on
+///      read, so it is never stale
 ///
 /// 3. **Resubscription works correctly**
 ///    - You can remove all listeners and add new ones later
-///    - The chain continues to track its source the whole time
-///    - This was the reason for choosing hot subscription over lazy
+///    - On re-attach the chain re-subscribes to the source AND resyncs its
+///      stored value to the current source value
 ///
 /// 4. **Memory management considerations**
-///    - Chains without dispose() stay in memory and keep processing events
-///    - Must call dispose() to unsubscribe from source and free memory
+///    - A chain that has listeners keeps processing events; once its last
+///      listener leaves it releases the source automatically
+///    - dispose() is still available to tear a chain down explicitly
 ///    - Variable assignment vs immediate .listen() creates different chain objects
 ///    - But both behave identically in terms of lifecycle
 ///
@@ -41,10 +44,12 @@ import 'package:watch_it/watch_it.dart';
 ///
 /// ## Architecture Notes:
 ///
-/// The "hot" subscription model was chosen to avoid a previous bug where
-/// chains would not re-subscribe after all listeners were removed. This
-/// ensures reliable resubscription behavior at the cost of keeping chains
-/// active even without listeners.
+/// Chains attach to their source on creation (or on the first listener when
+/// lazy) and detach on the last listener, mirroring how a widget subscribes
+/// only while mounted. Re-attaching resyncs the derived value from the
+/// source, and `.value` is derived on read while detached, so no listener is
+/// leaked on the source while the chain is unobserved and `.value` stays
+/// correct (see https://github.com/escamoteur/functional_listener/issues/13).
 
 // Test subclasses that track constructor and handler calls
 // Global counter for ALL TrackedMapValueNotifier instances created
@@ -319,6 +324,13 @@ class _TestRegisterHandlerInlineWidget extends WatchingWidget {
   }
 }
 
+// A ValueNotifier that exposes whether it currently has any listeners, so tests
+// can assert that derived chains attach/detach from their source correctly.
+class _ObservableSource extends ValueNotifier<int> {
+  _ObservableSource(super.value);
+  bool get hasAnyListeners => hasListeners;
+}
+
 // Test controller class that holds chains
 class TestController {
   final ValueNotifier<int> source;
@@ -480,21 +492,39 @@ void main() {
       source.dispose();
     });
 
-    test('chain stays subscribed even with zero listeners', () {
-      final source = ValueNotifier<int>(0);
+    test('chain detaches from source when the last listener is removed', () {
+      final source = _ObservableSource(0);
       final chain = source.map((x) => x * 2);
 
-      // Add and then remove listener
+      // Add and then remove a listener.
       void listener() {}
       chain.addListener(listener);
+      expect(source.hasAnyListeners, isTrue);
       source.value = 5;
       expect(chain.value, 10);
 
       chain.removeListener(listener);
 
-      // Chain still updates even with no listeners!
+      // With zero listeners the chain detaches from the source (no leak) but
+      // `.value` is still derived from the source on read.
+      expect(source.hasAnyListeners, isFalse);
       source.value = 7;
-      expect(chain.value, 14); // Chain still tracking source
+      expect(chain.value, 14);
+
+      // Re-attaching resubscribes; the new listener only fires on the next change.
+      final seen = <int>[];
+      void listener2() => seen.add(chain.value);
+      chain.addListener(listener2);
+      expect(source.hasAnyListeners, isTrue);
+      expect(chain.value, 14);
+      expect(seen, isEmpty);
+
+      source.value = 9;
+      expect(chain.value, 18);
+      expect(seen, [18]);
+
+      chain.removeListener(listener2);
+      expect(source.hasAnyListeners, isFalse);
 
       if (chain is FunctionalValueNotifier) {
         (chain as FunctionalValueNotifier).dispose();

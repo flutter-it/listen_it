@@ -19,10 +19,22 @@ void main() {
 
     destListenable.removeListener(handler);
 
+    // With no listeners the chain detaches from its source, but `.value` is
+    // derived from the current source value on read.
     sourceListenable.value = 4711;
 
     expect(destValue, '42');
     expect(destListenable.value, '4711');
+
+    // Re-observing resubscribes; the stored value is resynced.
+    destListenable.addListener(handler);
+    expect(destListenable.value, '4711');
+    expect(destValue, '42'); // resync doesn't notify the new listener
+
+    sourceListenable.value = 1;
+    expect(destValue, '1');
+
+    destListenable.removeListener(handler);
   });
 
   test('Select Test', () {
@@ -669,6 +681,168 @@ void main() {
     expect(mapNotifier.value, 2);
     expect(mapCallCount, 1);
     expect(chainCallCount, 2); // 1 on init, 1 after notifier.value = 1;
+  });
+
+  test('debounce detaches on last listener and resyncs on reattach', () async {
+    final source = ValueNotifier<int>(0);
+    final debounced = source.debounce(const Duration(milliseconds: 10));
+
+    void listener() {}
+    debounced.addListener(listener);
+
+    source.value = 1;
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(debounced.value, 1);
+
+    // Removing the last listener tears down the chain (cancels the timer).
+    debounced.removeListener(listener);
+
+    source.value = 2;
+    // Detached: `.value` is the current source value, without debouncing.
+    expect(debounced.value, 2);
+
+    // Re-adding a listener reattaches and resyncs immediately.
+    debounced.addListener(listener);
+    expect(debounced.value, 2);
+
+    source.value = 3;
+    expect(debounced.value, 2); // debounced again while attached
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(debounced.value, 3);
+
+    debounced.removeListener(listener);
+    source.dispose();
+  });
+
+  test('combineLatest detaches on last listener and resyncs on reattach', () {
+    final a = ValueNotifier<int>(1);
+    final b = ValueNotifier<int>(2);
+    final combined = a.combineLatest<int, int>(b, (x, y) => x + y);
+
+    void listener() {}
+    combined.addListener(listener);
+    expect(combined.value, 3);
+
+    combined.removeListener(listener);
+
+    // Detached: `.value` is derived from the current source values.
+    a.value = 10;
+    expect(combined.value, 12);
+
+    // Reattaching resyncs from the current source values.
+    combined.addListener(listener);
+    expect(combined.value, 12);
+
+    combined.removeListener(listener);
+  });
+
+  test('combineLatest3 detaches on last listener and resyncs on reattach', () {
+    final a = ValueNotifier<int>(1);
+    final b = ValueNotifier<int>(2);
+    final c = ValueNotifier<int>(3);
+    final combined =
+        a.combineLatest3<int, int, int>(b, c, (x, y, z) => x + y + z);
+
+    void listener() {}
+    combined.addListener(listener);
+    expect(combined.value, 6);
+
+    combined.removeListener(listener);
+
+    a.value = 10;
+    expect(combined.value, 15);
+
+    combined.addListener(listener);
+    expect(combined.value, 15);
+
+    combined.removeListener(listener);
+  });
+
+  test('combineLatest4 detaches on last listener and resyncs on reattach', () {
+    final a = ValueNotifier<int>(1);
+    final b = ValueNotifier<int>(2);
+    final c = ValueNotifier<int>(3);
+    final d = ValueNotifier<int>(4);
+    final combined = a.combineLatest4<int, int, int, int>(
+      b,
+      c,
+      d,
+      (w, x, y, z) => w + x + y + z,
+    );
+
+    void listener() {}
+    combined.addListener(listener);
+    expect(combined.value, 10);
+
+    combined.removeListener(listener);
+
+    a.value = 10;
+    expect(combined.value, 19);
+
+    combined.addListener(listener);
+    expect(combined.value, 19);
+
+    combined.removeListener(listener);
+  });
+
+  test('combineLatest5 detaches on last listener and resyncs on reattach', () {
+    final a = ValueNotifier<int>(1);
+    final b = ValueNotifier<int>(2);
+    final c = ValueNotifier<int>(3);
+    final d = ValueNotifier<int>(4);
+    final e = ValueNotifier<int>(5);
+    final combined = a.combineLatest5<int, int, int, int, int>(
+      b,
+      c,
+      d,
+      e,
+      (v, w, x, y, z) => v + w + x + y + z,
+    );
+
+    void listener() {}
+    combined.addListener(listener);
+    expect(combined.value, 15);
+
+    combined.removeListener(listener);
+
+    a.value = 10;
+    expect(combined.value, 24);
+
+    combined.addListener(listener);
+    expect(combined.value, 24);
+
+    combined.removeListener(listener);
+  });
+
+  test('combineLatest6 detaches on last listener and resyncs on reattach', () {
+    final a = ValueNotifier<int>(1);
+    final b = ValueNotifier<int>(2);
+    final c = ValueNotifier<int>(3);
+    final d = ValueNotifier<int>(4);
+    final e = ValueNotifier<int>(5);
+    final f = ValueNotifier<int>(6);
+    final combined = a.combineLatest6<int, int, int, int, int, int>(
+      b,
+      c,
+      d,
+      e,
+      f,
+      (u, v, w, x, y, z) => u + v + w + x + y + z,
+    );
+
+    void listener() {}
+    combined.addListener(listener);
+    expect(combined.value, 21);
+
+    combined.removeListener(listener);
+
+    a.value = 10;
+    expect(combined.value, 30);
+
+    combined.addListener(listener);
+    expect(combined.value, 30);
+
+    combined.removeListener(listener);
   });
 }
 

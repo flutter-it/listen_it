@@ -16,8 +16,9 @@ metadata:
 - `listen()` signature differs: on `Listenable` gets `(subscription)`, on `ValueListenable` gets `(value, subscription)`
 - `mergeWith()` is an INSTANCE method on ValueListenable, NOT a static method
 - There is NO `throttle()` operator
-- NEVER create operator chains inline in `build()` - memory leak! Use class fields or watch_it
-- All operators support `{bool lazy = false}` for deferred initialization
+- Chains detach from their source when their last listener is removed and re-attach on the next one (v6.0.0+); `.value` is derived from the source on read while detached (except `mergeWith`, which keeps its last value) — never stale, no dangling listener. Keep transformation functions pure: they may run on read.
+- Don't create a new chain on every rebuild (e.g. inline in `ValueListenableBuilder`'s `valueListenable:`); create it once (class field, `late final`, watch_it selector — cached per widget instance — or `createOnce`).
+- All operators support `{bool lazy = false}`: lazy only delays the first subscription until the first listener; `.value` is derived on read before that, so there is no stale-value trade-off
 
 ## listen() - Subscribing to Changes
 
@@ -95,6 +96,14 @@ processed.listen((query, subscription) {
 });
 ```
 
+## Chain Lifecycle (v6.0.0+)
+
+- **Attach**: on creation (or on first listener with `lazy: true`).
+- **Detach**: on last `removeListener` the chain unsubscribes from its source; cascades down through the whole chain.
+- **Re-attach**: next `addListener` re-subscribes (cascading up) and resyncs the value from the source *before* the new listener is added - no spurious notification.
+- **`.value` while detached** (derived on read): `map`/`select` → `transform(source.value)`; `where` → `source.value` if it passes, else last passing value; `debounce`/`async` → `source.value`; `combineLatest` → `combiner(...)`; `mergeWith` → last received value.
+- `dispose()` is only needed to end a chain that still has listeners, or to cancel a pending `debounce` timer / `async` update. A chain without listeners holds no subscription and is simply GC'd.
+
 ## Reactive Collections
 
 Auto-notify listeners on mutations:
@@ -146,13 +155,18 @@ counter.map((x) => x * 2);  // Lost! Nobody holds a reference
 // ✅ Capture it
 final doubled = counter.map((x) => x * 2);
 
-// ❌ Creating chains inline in build() - MEMORY LEAK
+// ❌ Creating a chain on every rebuild - new chain object every rebuild
 Widget build(context) {
-  final doubled = counter.map((x) => x * 2);  // New chain every build!
-  ...
+  return ValueListenableBuilder(
+    valueListenable: source.map((x) => x * 2),  // New chain every build!
+    builder: (context, value, _) => Text('$value'),
+  );
 }
-// ✅ Use class field or watch_it (caches selector automatically)
-late final doubled = counter.map((x) => x * 2);  // Created once
+// ✅ Class field - created once
+late final doubled = counter.map((x) => x * 2);
+// ✅ watch_it selector - cached per widget instance; when the widget goes away
+//    the chain loses its listener and detaches from m.source (v6.0.0+)
+final value = watchValue((Model m) => m.source.map((x) => x * 2));
 
 // ❌ Using addListener instead of listen
 notifier.addListener(() { print(notifier.value); });

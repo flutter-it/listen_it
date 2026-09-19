@@ -38,10 +38,10 @@ flutter pub publish --dry-run
 
 ### Core Concepts
 
-1. **Lazy Chain Initialization**
-   - Operator chains (map, where, select, etc.) don't subscribe to sources until a listener is added
-   - `FunctionalValueNotifier` base class implements lazy initialization via `addListener` override
-   - `chainInitialized` flag prevents double subscription
+1. **Chain Lifecycle (attach eagerly, detach when unobserved)**
+   - Operator chains (map, where, select, etc.) subscribe to their source eagerly on creation (or on the first listener with `lazy: true`), detach when their last listener is removed and re-attach (with resync) on the next listener
+   - While detached `.value` is derived from the current source value on read (except `mergeWith`), so transformation functions must be pure
+   - Shared logic lives in the `ChainLifecycle` mixin (`chainInitialized`, `attach()`, `detach()`, `resync()`) used by `FunctionalValueNotifier`, `CombiningValueNotifierBase` and `FunctionalChangeNotifier`
 
 2. **ValueListenable-Based**
    - All operators return new `ValueListenable` instances (not ValueNotifier)
@@ -85,8 +85,8 @@ flutter pub publish --dry-run
 - `mergeWith`: Creates `MergingValueNotifiers` that merges list of ValueListenables
 
 **Disposal chain**:
-- All `FunctionalValueNotifier` subclasses override `dispose()` to remove listener from `previousInChain`
-- Proper cleanup prevents memory leaks in operator chains
+- `ChainLifecycle.dispose()` removes the listener(s) from the source(s) if the chain is currently attached
+- Chains also release their source automatically when their last listener is removed
 
 ## File Structure
 

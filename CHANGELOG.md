@@ -1,3 +1,65 @@
+## [6.0.0] - 2026-09-19
+
+### Breaking behavior change: chains detach when unobserved
+
+Operator chains (`map`, `select`, `where`, `debounce`, `async`, `combineLatest*`,
+`mergeWith` and `Listenable.debounce`) now **detach from their source when their
+last listener is removed** and re-attach on the next listener.
+
+- Chains still subscribe eagerly on creation (or on the first listener with
+  `lazy: true`) - nothing changes for chains that never had a listener or that
+  always have at least one.
+- Once the last listener is removed, the chain removes its handler from the
+  source. In a longer chain this cascades down to the original source, so a
+  discarded chain no longer keeps a listener registered on a long-lived
+  `ValueNotifier`.
+- The next `addListener` re-attaches the chain (cascading up again) and resyncs
+  its value from the source **before** the new listener is registered, so the
+  resync never notifies that listener. Notifications resume on the next change.
+- **`.value` is always correct while detached**: it is derived from the current
+  source value on read (`map` calls `convert`, `select` calls `selector`,
+  `where` returns the source value if it passes the filter and its last stored
+  value otherwise, `debounce`/`async` return the source value immediately,
+  `combineLatest*` call the `combiner`). This also applies to `lazy: true`
+  chains before their first listener.
+  - Consequence: transformation functions may be invoked on read while a chain
+    is unobserved, so they must be pure and cheap.
+  - Exception: `mergeWith` can't know which of its sources changed last while
+    detached and keeps the last value it received while it had listeners.
+- `dispose()` still works on attached and detached chains; `debounce` now also
+  cancels a pending timer on dispose/detach.
+
+**Why**: a chain created per widget instance (e.g. inline in a watch_it
+selector like `watchValue((M m) => m.counter.map(...))`) used to stay
+subscribed to `m.counter` forever after the widget was disposed, accumulating
+one listener - and one live chain doing work - per widget instance ever built.
+
+**History**: functional_listener (the predecessor of listen_it) detached on the
+last listener until v4.0.0 (Sept 2024), where that was removed because of
+[functional_listener#13](https://github.com/escamoteur/functional_listener/issues/13):
+after `addListener` + `removeListener`, `mapped.value` no longer followed
+`source.value`. This release re-introduces the detach, but thanks to
+derive-on-read the scenario from #13 now works:
+
+```dart
+final mapped = source.map((v) => v + 1);
+mapped.addListener(l);
+mapped.removeListener(l);
+source.value = 123;
+print(mapped.value); // 124 - derived from the source, chain is detached
+```
+
+Thanks to @Feichtmeier for the detach mechanism
+([#2](https://github.com/flutter-it/listen_it/pull/2)).
+
+### Internal
+
+- New `ChainLifecycle` mixin holds the shared attach/detach/resync logic used
+  by `FunctionalValueNotifier`, the new `CombiningValueNotifierBase` (base of
+  `CombiningValueNotifier`..`CombiningValueNotifier6`), `MergingValueNotifiers`
+  and `FunctionalChangeNotifier`.
+* `pubspec.lock` is no longer committed, following the Dart guidelines for library packages.
+
 ## [5.3.5] - 2026-02-19
 
 - Added AI skill files in `skills/` directory for AI coding assistants

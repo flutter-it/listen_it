@@ -69,6 +69,28 @@ extension FunctionaListener2 on Listenable {
 /// pipelines from a simple `ValueListenable`
 /// In the examples we use [listen] to react on value changes. Instead of applying [listen] you
 /// could also pass the end of the function chain to a `ValueListenableBuilder`
+///
+/// ## Chain lifecycle
+///
+/// The `ValueListenable` returned by an operator subscribes to its source
+/// eagerly on creation (or on its first listener when created with
+/// `lazy: true`). When its last listener is removed it **detaches** from the
+/// source again, so a chain that is no longer observed never keeps a listener
+/// registered on a long-lived source (e.g. a chain created per widget
+/// instance). The next listener re-attaches it and resyncs its value.
+///
+/// While a chain is detached its `.value` is always **derived from the
+/// current source value on read** ([map], [select], [where], [debounce],
+/// [async], [combineLatest] and friends), so reading `.value` of an unobserved
+/// chain is never stale. The only exception is [mergeWith], which can't know
+/// which of its sources changed last and therefore returns the last value it
+/// received while it was attached.
+///
+/// Because of this, transformation functions ([map]'s `convert`, [select]'s
+/// `selector`, [where]'s filter, the `combiner` of [combineLatest]) may be
+/// invoked on every read of `.value` while the chain has no listeners. They
+/// must therefore be pure and cheap: no side effects, no dependence on
+/// anything but their input.
 extension FunctionaListener<T> on ValueListenable<T> {
   ///
   /// let you work with a `ValueListenable` as it should be by installing a
@@ -440,12 +462,18 @@ extension FunctionaListener<T> on ValueListenable<T> {
   /// [mergeWith] will change too.
   ///
   /// By default, [mergeWith] uses eager initialization ([lazy] = false), meaning
-  /// it subscribes to all sources immediately and the `.value` getter will always
+  /// it subscribes to all sources immediately and the `.value` getter will
   /// reflect the most recent value from any source, even before adding a listener.
   ///
   /// If [lazy] is true, subscription to sources is delayed until the first listener
   /// is added. This can improve performance when creating many merges that might
   /// not be used, but `.value` will be stale until a listener is added.
+  ///
+  /// ATTENTION: Unlike the other operators, [mergeWith] can't derive its value
+  /// on read while it is detached (after its last listener was removed),
+  /// because it can't know which of its sources changed last. In that state
+  /// `.value` is the last value it received while it had listeners; it is
+  /// updated again on the next change of any source after a listener was added.
   ///
   /// ```
   ///     final listenable1 = ValueNotifier<int>(0);

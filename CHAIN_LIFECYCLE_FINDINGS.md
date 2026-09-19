@@ -17,16 +17,18 @@ This document contains findings from comprehensive testing of FunctionalValueNot
 
 **Implication**: The "hot" subscription model is working as designed - chains subscribe to their source immediately in the constructor and stay subscribed.
 
-### 2. Hot Subscription Model
+### 2. Subscription Model (updated for v6.0.0: detach when unobserved)
 
-**Finding**: Chains maintain their subscription to the source ValueNotifier even when they have zero listeners.
+**Finding**: Chains subscribe to their source eagerly on creation (or on the first listener with `lazy: true`), **detach from the source when their last listener is removed** and re-attach on the next listener. In a longer chain the detach/attach cascades through all levels down to the original source.
 
 **Evidence**:
-- After removing all listeners from a chain, firing events on the source still updates the chain's value
-- Chains continue processing events with zero listeners
-- `internalHandler` continues to be called
+- After removing all listeners from a chain, `source.hasListeners` is `false`
+- `internalHandler` is no longer called on source changes while detached
+- Adding a listener again re-subscribes and resyncs the stored value before the new listener is registered
 
-**Rationale**: This design choice was intentional to fix a previous bug where lazy subscription prevented chains from re-subscribing after all listeners were removed.
+**`.value` stays correct while detached**: the value getter derives the value from the current source value on read (`map` → `convert(source.value)`, `where` → source value if it passes, otherwise the last stored value, `combineLatest` → `combiner(...)`, etc.). Only `mergeWith` returns its last received value because it can't know which source changed last. This is what makes the v4.0.0 regression scenario (functional_listener #13) work despite the detach.
+
+**History**: up to v4.0.0 (Sept 2024) chains detached on the last listener but `.value` went stale; v4.0.0 removed the detach ("hot" model, listeners accumulate); v6.0.0 re-introduced the detach together with derive-on-read.
 
 ### 3. Resubscription Works Correctly
 
@@ -118,10 +120,9 @@ ValueListenableBuilder doesn't have selector caching - it's a plain Flutter widg
 
 #### Why Uncached Inline Creation Is Bad:
 
-1. **Memory Leak**: Each rebuild creates a new chain object
-2. **All Old Chains Stay Subscribed**: Due to hot subscription model, old chains never unsubscribe
-3. **Unbounded Memory Growth**: With N rebuilds, you have N chain objects in memory, all processing events
-4. **Performance Degradation**: All chains continue processing events, even though only the latest one is used
+1. **Wasted work**: Each rebuild creates a new chain object that subscribes to the source eagerly
+2. **Since v6.0.0 old chains do unsubscribe** once their last listener is removed (e.g. when the widget that listened is disposed); chains that were created but never listened to detach on the first source notification (the `notifyListeners` re-check sees no listeners) and stay correct via derive-on-read
+3. **Before v6.0.0**: all old chains stayed subscribed forever, causing unbounded memory growth and every old chain processing every event
 
 #### Correct Patterns:
 
@@ -349,7 +350,7 @@ These tests prove that Dart's GC correctly handles circular references when the 
 1. **Don't create chains inline in ValueListenableBuilder** - no caching, always leaks
 2. **Don't create chains in builder functions** - recreated on every build
 3. **Don't use `allowObservableChange: true`** unless you need dynamic observable switching
-4. **Don't ignore disposal** - chains stay hot and can leak memory if source is kept alive
+4. **Don't ignore disposal** - `dispose()` is still the explicit way to end a chain; a chain that was created but never listened to only detaches once the source notifies for the first time
 5. **Don't create chains in StatefulWidget build** without storing them in State
 
 ### watch_it Specific ✅
@@ -404,7 +405,9 @@ These findings should be prominently documented in:
 
 ## Conclusion
 
-The listen_it package's "hot" subscription model is working correctly as designed. Chain objects are created once and maintain stable identity throughout their lifecycle.
+Chain objects are created once and maintain stable identity throughout their lifecycle.
+
+**Update (2026-09-19, v6.0.0)**: chains now detach from their source when their last listener is removed and re-attach on the next one, while `.value` is derived from the source on read while detached. A chain that is discarded after its listener is gone (e.g. with the widget that watched it) no longer leaks a listener on the source. See section 2 and `test/detach_on_unobserved_test.dart`, `test/watch_it_integration_test.dart`.
 
 **Major breakthrough (2025-01-11)**: The inline chain creation memory leak issue is **SOLVED** for watch_it users! With watch_it v2.0+, the default `allowObservableChange: false` parameter provides automatic selector caching, making inline chain creation completely safe:
 

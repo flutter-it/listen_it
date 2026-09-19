@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-abstract class FunctionalChangeNotifier extends ChangeNotifier {
+import 'package:listen_it/src/functional_value_notifiers.dart'
+    show ChainLifecycle;
+
+abstract class FunctionalChangeNotifier extends ChangeNotifier
+    with ChainLifecycle {
   final Listenable previousInChain;
   late VoidCallback internalHandler;
-
-  @protected
-  bool chainInitialized = false;
 
   FunctionalChangeNotifier(
     this.previousInChain,
@@ -22,18 +23,14 @@ abstract class FunctionalChangeNotifier extends ChangeNotifier {
   }
 
   @override
-  void addListener(VoidCallback listener) {
-    if (!chainInitialized) {
-      init(previousInChain);
-    }
-    super.addListener(listener);
-  }
+  void attach() => init(previousInChain);
 
   @override
-  void dispose() {
-    previousInChain.removeListener(internalHandler);
-    super.dispose();
-  }
+  void detach() => previousInChain.removeListener(internalHandler);
+
+  /// A plain `Listenable` has no value that could be resynced.
+  @override
+  void resync() {}
 }
 
 class DebouncedChangeNotifier extends FunctionalChangeNotifier {
@@ -54,5 +51,12 @@ class DebouncedChangeNotifier extends FunctionalChangeNotifier {
       debounceTimer = Timer(debounceDuration, notifyListeners);
     };
     setupChain();
+  }
+
+  @override
+  void detach() {
+    debounceTimer?.cancel();
+    debounceTimer = null;
+    super.detach();
   }
 }
